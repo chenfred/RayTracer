@@ -6,7 +6,7 @@
 
 void simple_test();
 int main() {
-    simple_test();
+    // simple_test();
     return 0;
 }
 float generateRandomNumber() {

@@ -7,9 +7,11 @@
 class Film {
   public:
     Film(size_t _width, size_t _height);
+    ~Film() = default;
 
     void save(const std::filesystem::path &path);
 
+    float getAspectRatio() const { return static_cast<float>(width) / height; }
     size_t getWidth() const { return width; }
     size_t getHeight() const { return height; }
     glm::vec3 getPixel(size_t x, size_t y) { return pixels.at(y * width + x); }
