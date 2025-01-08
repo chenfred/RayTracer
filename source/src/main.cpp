@@ -20,9 +20,9 @@ int main() {
 }
 
 void test_camera_ray_intersect() {
-    size_t width = 1920, height = 1080;
+    size_t width = 3840, height = 2560;
     Film film{width, height};
-    glm::vec3 light_source_pos{-2,2,2};
+    glm::vec3 light_source_pos{1, 1, 1};
     glm::vec3 light_intensity{5};
 
     Sphere sphere{0.5f, glm::vec3{0}};
@@ -31,7 +31,8 @@ void test_camera_ray_intersect() {
     auto paint = [&](size_t x, size_t y) -> void {
         auto eyeRay = camera.generateEyeRay({x, y});
         auto hitInfo = sphere.intersect(eyeRay);
-        if(!hitInfo.has_value()) return;
+        if (!hitInfo.has_value())
+            return;
 
         const auto &point = hitInfo->hitPoint;
         const auto &normal = hitInfo->hitNormal;
@@ -45,7 +46,7 @@ void test_camera_ray_intersect() {
         color += glm::vec3{1, 1, 1} * light_intensity *
                  std::pow(std::max(0.0f, glm::dot(halfVector, normal)), 128.0f) / dist;
         // diffuse term
-        color += glm::vec3{0.8,0.3,0.5} * light_intensity * std::max(0.0f, glm::dot(lightDir, normal)) / dist;
+        color += glm::vec3{0.3} * light_intensity * std::max(0.0f, glm::dot(lightDir, normal)) / dist;
         // ambient term
         color += glm::vec3{0.01} * light_intensity;
 
@@ -58,7 +59,9 @@ void test_camera_ray_intersect() {
     pool.wait();
     pool_rendering_timer.conclude();
 
+    Timer save_film_timer("save film to file (may using ThreadPool)");
     film.save("sphere.png");
+    save_film_timer.conclude();
 }
 
 float generateRandomNumber() {

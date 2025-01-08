@@ -1,4 +1,5 @@
 #include "camera/film.hpp"
+#include "thread/thread_pool.hpp"
 #include <cstddef>
 #include <format>
 #include <fstream>
@@ -44,17 +45,20 @@ void Film::saveToPNG(const std::filesystem::path &path) {
 
     // 分配内存存储像素数据，包括alpha通道
     std::vector<unsigned char> pixelData(width * height * 4);
-    for (size_t y = 0; y < height; ++y) {
-        for (size_t x = 0; x < width; ++x) {
-            const auto &color = getPixel(x, y);
-            glm::ivec3 icolor = glm::clamp(color * 255.0f, 0.0f, 255.0f);
-            size_t index = (y * width + x) * 4;
-            pixelData[index + 0] = static_cast<unsigned char>(icolor[0]);
-            pixelData[index + 1] = static_cast<unsigned char>(icolor[1]);
-            pixelData[index + 2] = static_cast<unsigned char>(icolor[2]);
-            pixelData[index + 3] = 255; // alpha通道设置为1.0
-        }
-    }
+    // 实现并发写入pixelData的函数
+    auto f_loadingPixelData=[&](size_t y, size_t x)->void{
+        const auto &color = getPixel(x, y);
+        glm::ivec3 icolor = glm::clamp(color * 255.0f, 0.0f, 255.0f);
+        size_t index = (y * width + x) * 4;
+        pixelData[index + 0] = static_cast<unsigned char>(icolor[0]);
+        pixelData[index + 1] = static_cast<unsigned char>(icolor[1]);
+        pixelData[index + 2] = static_cast<unsigned char>(icolor[2]);
+        pixelData[index + 3] = 255; // alpha通道设置为1.0
+    };
+    // 用线程池执行并发写入
+    ThreadPool pool{};
+    pool.parallelFor(height, width, f_loadingPixelData);
+    pool.wait();
 
     // 使用 stbi_write_png 保存 PNG 文件，指定通道数为4
     int result = stbi_write_png(utf8Path, static_cast<int>(width), static_cast<int>(height), 4, pixelData.data(), 0);
