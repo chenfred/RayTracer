@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 #include <random>
 
+#include <stb_image.h>
+
 float generateRandomNumber() {
     static std::random_device rd;
     static std::mt19937 gen(rd());
