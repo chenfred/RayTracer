@@ -1,5 +1,14 @@
 #include "thread/thread_pool.hpp"
+#include <cmath>
 #include <thread>
+
+void ParallelForTask::run() {
+    for (auto i = 0; i < chunk_width; ++i) {
+        for (auto j = 0; j < chunk_height; ++j) {
+            lambda(x + i, y + j);
+        }
+    }
+}
 
 ThreadPool::ThreadPool(size_t thread_count) : alive{true}, num_pending_task{0} {
     if (thread_count == 0) {
@@ -19,6 +28,29 @@ ThreadPool::~ThreadPool() {
     threads.clear();
 }
 
+void ThreadPool::parallel_for(size_t width, size_t height, const std::function<void(size_t, size_t)> &lambda) {
+    Guard guard(spinLock);
+
+    double divider = std::sqrt(threads.size()); // 把width*height切分成小块的chunk_width*chunk*height，均匀地分配给池子里的线程
+    size_t chunk_width = std::ceil(static_cast<double>(width) / divider);
+    size_t chunk_height = std::ceil(static_cast<double>(height) / divider);
+
+    for (auto x = 0; x < width; x += chunk_width) {
+        // 最后一块可能比较小
+        auto cur_chunk_width = x + chunk_width <= width ? chunk_width : width - x;
+        if (cur_chunk_width <= 0)
+            break;
+        for (auto y = 0; y < height; y += chunk_height) {
+            auto cur_chunk_height = y + chunk_height <= height ? chunk_height : height - y;
+            if (cur_chunk_height <= 0)
+                break;
+
+            num_pending_task++;
+            tasks.push_back(new ParallelForTask(x, y, cur_chunk_width, cur_chunk_height, lambda));
+        }
+    }
+}
+
 void ThreadPool::wait() const {
     while (num_pending_task != 0) {
         std::this_thread::yield();
@@ -26,13 +58,13 @@ void ThreadPool::wait() const {
 }
 
 void ThreadPool::addTask(Task *task) {
-    std::lock_guard<std::mutex> guard(lock);
+    Guard guard(spinLock); // 使用 Guard 类管理 SpinLock
     num_pending_task++;
     tasks.push_back(task);
 }
 
 Task *ThreadPool::getTask() {
-    std::lock_guard<std::mutex> guard(lock);
+    Guard guard(spinLock); // 使用 Guard 类管理 SpinLock
     if (tasks.empty()) {
         return nullptr;
     }

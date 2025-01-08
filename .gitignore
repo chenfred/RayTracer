@@ -1,3 +1,9 @@
 # directories to ignore
+.vscode/
 .cache/
 build/
+
+# files to ignore
+*.ppm
+*.exe
+*.pdb
