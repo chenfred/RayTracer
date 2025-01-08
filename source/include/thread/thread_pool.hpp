@@ -18,8 +18,8 @@ class Task {
 class ParallelForTask : public Task {
   public:
     ParallelForTask(size_t _x, size_t _y, size_t _chunk_width, size_t _chunk_height,
-    const std::function<void(size_t, size_t)>& _lambda)
-    : x{_x}, y{_y}, chunk_width{_chunk_width}, chunk_height{_chunk_height}, lambda{_lambda} {}
+                    const std::function<void(size_t, size_t)> &_lambda)
+        : x{_x}, y{_y}, chunk_width{_chunk_width}, chunk_height{_chunk_height}, lambda{_lambda} {}
 
     void run() override;
 
@@ -33,8 +33,8 @@ class ThreadPool {
     ThreadPool(size_t thread_count = 0);
     ~ThreadPool();
 
-    //为[0, width)*[0, height)的(x, y)并行执行lambda(x, y)
-    void parallelFor(size_t width, size_t height, const std::function<void(size_t, size_t)>& lambda);
+    // 为[0, width)*[0, height)的(x, y)并行执行lambda(x, y)
+    void parallelFor(size_t width, size_t height, const std::function<void(size_t, size_t)> &lambda);
     void wait() const;
 
     void addTask(Task *task);

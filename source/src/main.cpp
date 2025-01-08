@@ -5,6 +5,8 @@
 #include "utils/timer.hpp"
 #include <glm/glm.hpp>
 #include <random>
+#include <iostream>
+#include <format>
 
 void test_camera_ray_intersect();
 void simple_test();
@@ -14,22 +16,25 @@ int main() {
     return 0;
 }
 
-void test_camera_ray_intersect(){
+void test_camera_ray_intersect() {
     size_t width = 1920, height = 1080;
     Film film{width, height};
-    Sphere sphere{0.5f,glm::vec3{0}};
-    Camera camera{film, {0,0,1}, {0,0,0}, 90};
-    
-    auto paint=[&film, &sphere, &camera](size_t x, size_t y)->void{
-        auto eyeRay = camera.generateEyeRay({x,y});
+    Sphere sphere{0.5f, glm::vec3{0}};
+    Camera camera{film, {0, 0, 1}, {0, 0, 0}, 90};
+
+    auto paint = [&film, &sphere, &camera](size_t x, size_t y) -> void {
+        auto eyeRay = camera.generateEyeRay({x, y});
         auto hitInfo = sphere.intersect(eyeRay);
-        if(hitInfo.has_value()){
+        if (hitInfo.has_value()) {
             film.setPixel(x, y, hitInfo->hitNormal);
+        } else {
+            film.setPixel(x, y, {1, 1, 1});
         }
     };
 
-    ThreadPool pool{128};
+    ThreadPool pool{};
     pool.parallelFor(film.getWidth(), film.getHeight(), paint);
+    pool.wait();
 
     film.save("sphere.png");
 }
@@ -57,9 +62,10 @@ void simple_test() {
 
     Timer parallel_timer{"parallel setPixel"};
     thread_pool.parallelFor(film.getWidth(), film.getHeight(),
-                             [&film, &random_color](size_t x, size_t y) -> void {
-                                 film.setPixel(x, y, random_color);
-                             });
+                            [&film, &random_color](size_t x, size_t y) -> void {
+                                film.setPixel(x, y, random_color);
+                            });
+    thread_pool.wait();
     parallel_timer.conclude();
 
     Timer save_timer("save to file");

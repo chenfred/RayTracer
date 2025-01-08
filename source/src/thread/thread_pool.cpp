@@ -29,8 +29,6 @@ ThreadPool::~ThreadPool() {
 }
 
 void ThreadPool::parallelFor(size_t width, size_t height, const std::function<void(size_t, size_t)> &lambda) {
-    Guard guard(spinLock);
-
     double divider = std::sqrt(threads.size()); // 把width*height切分成小块的chunk_width*chunk*height，均匀地分配给池子里的线程
     size_t chunk_width = std::ceil(static_cast<double>(width) / divider);
     size_t chunk_height = std::ceil(static_cast<double>(height) / divider);
@@ -39,14 +37,13 @@ void ThreadPool::parallelFor(size_t width, size_t height, const std::function<vo
         // 最后一块可能比较小
         auto cur_chunk_width = std::min(chunk_width, width - x);
         if (cur_chunk_width <= 0)
-            continue;
+            break;
         for (auto y = 0; y < height; y += chunk_height) {
             auto cur_chunk_height = std::min(chunk_height, height - y);
             if (cur_chunk_height <= 0)
-                continue;
+                break;
 
-            numPendingTasks++;
-            tasks.push_back(new ParallelForTask(x, y, cur_chunk_width, cur_chunk_height, lambda));
+            addTask(new ParallelForTask(x, y, cur_chunk_width, cur_chunk_height, lambda));
         }
     }
 }
