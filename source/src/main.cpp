@@ -1,12 +1,15 @@
 #include "camera/camera.hpp"
 #include "camera/film.hpp"
+#include "glm/fwd.hpp"
+#include "glm/geometric.hpp"
 #include "shape/sphere.hpp"
 #include "thread/thread_pool.hpp"
 #include "utils/timer.hpp"
-#include <glm/glm.hpp>
-#include <random>
-#include <iostream>
+#include <cmath>
 #include <format>
+#include <glm/glm.hpp>
+#include <iostream>
+#include <random>
 
 void test_camera_ray_intersect();
 void simple_test();
@@ -19,22 +22,41 @@ int main() {
 void test_camera_ray_intersect() {
     size_t width = 1920, height = 1080;
     Film film{width, height};
+    glm::vec3 light_source_pos{-2,2,2};
+    glm::vec3 light_intensity{5};
+
     Sphere sphere{0.5f, glm::vec3{0}};
     Camera camera{film, {0, 0, 1}, {0, 0, 0}, 90};
 
-    auto paint = [&film, &sphere, &camera](size_t x, size_t y) -> void {
+    auto paint = [&](size_t x, size_t y) -> void {
         auto eyeRay = camera.generateEyeRay({x, y});
         auto hitInfo = sphere.intersect(eyeRay);
-        if (hitInfo.has_value()) {
-            film.setPixel(x, y, hitInfo->hitNormal);
-        } else {
-            film.setPixel(x, y, {1, 1, 1});
-        }
+        if(!hitInfo.has_value()) return;
+
+        const auto &point = hitInfo->hitPoint;
+        const auto &normal = hitInfo->hitNormal;
+        auto lightDir = glm::normalize(light_source_pos - point);
+        auto viewDir = -eyeRay.getDirection();
+        auto halfVector = glm::normalize(lightDir + viewDir);
+        float dist = glm::distance(light_source_pos, point);
+
+        glm::vec3 color{};
+        // specular term
+        color += glm::vec3{1, 1, 1} * light_intensity *
+                 std::pow(std::max(0.0f, glm::dot(halfVector, normal)), 128.0f) / dist;
+        // diffuse term
+        color += glm::vec3{0.8,0.3,0.5} * light_intensity * std::max(0.0f, glm::dot(lightDir, normal)) / dist;
+        // ambient term
+        color += glm::vec3{0.01} * light_intensity;
+
+        film.setPixel(x, y, color);
     };
 
+    Timer pool_rendering_timer("parallel for rendering");
     ThreadPool pool{};
     pool.parallelFor(film.getWidth(), film.getHeight(), paint);
     pool.wait();
+    pool_rendering_timer.conclude();
 
     film.save("sphere.png");
 }

@@ -5,6 +5,7 @@
 #include "glm/matrix.hpp"
 #include "glm/trigonometric.hpp"
 
+//TODO: 修复并理解相机的坐标系和变换
 Camera::Camera(Film &_film, const glm::vec3 &_pos, const glm::vec3 &lookAtPoint, float fovY) : film{_film}, position{_pos} {
     clip2cameraMat = glm::inverse(glm::perspective(glm::radians(fovY), film.getAspectRatio(), 1.0f, 2.0f));
     camera2worldMat = glm::inverse(glm::lookAt(position, lookAtPoint, {0, 1, 0}));
@@ -15,7 +16,7 @@ Ray Camera::generateEyeRay(const glm::ivec2 &pixel_coord, const glm::vec2 &in_pi
     ndc_xy.y = 1.0f - ndc_xy.y;    // 屏幕空间左上角为原点，先转成左下角为原点
     ndc_xy = ndc_xy * 2.0f - 1.0f; //[0,1]->[0,2]->[-1,1]
 
-    glm::vec4 clip_coord{ndc_xy, 0.0f, 1.0f}; // TODO: 理解这个转换的意义（与zNear有关）
+    glm::vec4 clip_coord{ndc_xy, 0.0f, 1.0f}; //TODO: 理解这个转换的意义（与zNear有关）
     glm::vec3 world_pos{camera2worldMat * clip2cameraMat * clip_coord};
 
     return Ray(position, glm::normalize(world_pos - position));
