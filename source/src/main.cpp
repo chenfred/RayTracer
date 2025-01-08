@@ -1,18 +1,22 @@
 #include "camera/film.hpp"
 #include "thread/thread_pool.hpp"
-#include "utils/timer.hpp" // 添加: 包含 Timer 头文件
+#include "utils/timer.hpp"
 #include <glm/glm.hpp>
 #include <random>
 
+void simple_test();
+int main() {
+    simple_test();
+    return 0;
+}
 float generateRandomNumber() {
     static std::random_device rd;
     static std::mt19937 gen(rd());
     static std::uniform_real_distribution<> dis(0.0, 1.0);
     return dis(gen);
 }
-
-int main() {
-    size_t width = 2560, height = 1440;
+void simple_test() {
+    size_t width = 800, height = 600;
     glm::vec3 randomColor{generateRandomNumber(), generateRandomNumber(), generateRandomNumber()};
     Film film{width, height};
 
@@ -32,9 +36,8 @@ int main() {
                                  film.setPixel(x, y, randomColor);
                              });
     parallelTimer.conclude();
-    
+
+    Timer saveTimer("save to file");
     film.save("test.png");
-
-
-    return 0;
+    saveTimer.conclude();
 }

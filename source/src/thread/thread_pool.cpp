@@ -37,13 +37,13 @@ void ThreadPool::parallel_for(size_t width, size_t height, const std::function<v
 
     for (auto x = 0; x < width; x += chunk_width) {
         // 最后一块可能比较小
-        auto cur_chunk_width = x + chunk_width <= width ? chunk_width : width - x;
+        auto cur_chunk_width = std::min(chunk_width, width - x);
         if (cur_chunk_width <= 0)
-            break;
+            continue;
         for (auto y = 0; y < height; y += chunk_height) {
-            auto cur_chunk_height = y + chunk_height <= height ? chunk_height : height - y;
+            auto cur_chunk_height = std::min(chunk_height, height - y);
             if (cur_chunk_height <= 0)
-                break;
+                continue;
 
             num_pending_task++;
             tasks.push_back(new ParallelForTask(x, y, cur_chunk_width, cur_chunk_height, lambda));
