@@ -4,6 +4,9 @@
 build/
 
 # files to ignore
+*.jpg
+*.jpeg
+*.png
 *.ppm
 *.exe
 *.pdb

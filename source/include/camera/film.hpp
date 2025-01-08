@@ -18,4 +18,7 @@ class Film {
   private:
     size_t width, height;
     std::vector<glm::vec3> pixels;
+
+    void saveToPPM(const std::filesystem::path &path);
+    void saveToPNG(const std::filesystem::path &path);
 };

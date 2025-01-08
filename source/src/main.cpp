@@ -4,8 +4,6 @@
 #include <glm/glm.hpp>
 #include <random>
 
-#include <stb_image.h>
-
 float generateRandomNumber() {
     static std::random_device rd;
     static std::mt19937 gen(rd());
@@ -35,7 +33,7 @@ int main() {
                              });
     parallelTimer.conclude();
     
-    film.save("test.ppm");
+    film.save("test.png");
 
 
     return 0;
