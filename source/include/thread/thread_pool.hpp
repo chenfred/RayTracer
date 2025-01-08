@@ -34,7 +34,7 @@ class ThreadPool {
     ~ThreadPool();
 
     //为[0, width)*[0, height)的(x, y)并行执行lambda(x, y)
-    void parallel_for(size_t width, size_t height, const std::function<void(size_t, size_t)>& lambda);
+    void parallelFor(size_t width, size_t height, const std::function<void(size_t, size_t)>& lambda);
     void wait() const;
 
     void addTask(Task *task);
@@ -44,7 +44,7 @@ class ThreadPool {
 
   private:
     std::atomic<bool> alive;
-    std::atomic<size_t> num_pending_task;
+    std::atomic<size_t> numPendingTasks;
     std::vector<std::thread> threads;
     std::list<Task *> tasks;
     SpinLock spinLock; // 添加 SpinLock 成员变量

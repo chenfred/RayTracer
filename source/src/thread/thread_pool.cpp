@@ -10,7 +10,7 @@ void ParallelForTask::run() {
     }
 }
 
-ThreadPool::ThreadPool(size_t thread_count) : alive{true}, num_pending_task{0} {
+ThreadPool::ThreadPool(size_t thread_count) : alive{true}, numPendingTasks{0} {
     if (thread_count == 0) {
         thread_count = std::thread::hardware_concurrency();
     }
@@ -28,7 +28,7 @@ ThreadPool::~ThreadPool() {
     threads.clear();
 }
 
-void ThreadPool::parallel_for(size_t width, size_t height, const std::function<void(size_t, size_t)> &lambda) {
+void ThreadPool::parallelFor(size_t width, size_t height, const std::function<void(size_t, size_t)> &lambda) {
     Guard guard(spinLock);
 
     double divider = std::sqrt(threads.size()); // 把width*height切分成小块的chunk_width*chunk*height，均匀地分配给池子里的线程
@@ -45,21 +45,21 @@ void ThreadPool::parallel_for(size_t width, size_t height, const std::function<v
             if (cur_chunk_height <= 0)
                 continue;
 
-            num_pending_task++;
+            numPendingTasks++;
             tasks.push_back(new ParallelForTask(x, y, cur_chunk_width, cur_chunk_height, lambda));
         }
     }
 }
 
 void ThreadPool::wait() const {
-    while (num_pending_task != 0) {
+    while (numPendingTasks != 0) {
         std::this_thread::yield();
     }
 }
 
 void ThreadPool::addTask(Task *task) {
     Guard guard(spinLock); // 使用 Guard 类管理 SpinLock
-    num_pending_task++;
+    numPendingTasks++;
     tasks.push_back(task);
 }
 
@@ -75,7 +75,7 @@ Task *ThreadPool::getTask() {
 
 void ThreadPool::WorkerThread(int worker_id, ThreadPool *master) {
     while (master->alive) {
-        if (master->num_pending_task == 0) {
+        if (master->numPendingTasks == 0) {
             std::this_thread::yield();
         }
 
@@ -83,7 +83,7 @@ void ThreadPool::WorkerThread(int worker_id, ThreadPool *master) {
         if (task != nullptr) {
             task->run();
             delete task;
-            master->num_pending_task--;
+            master->numPendingTasks--;
         } else {
             std::this_thread::yield();
         }

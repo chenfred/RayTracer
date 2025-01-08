@@ -17,7 +17,7 @@ float generateRandomNumber() {
 }
 void simple_test() {
     size_t width = 800, height = 600;
-    glm::vec3 randomColor{generateRandomNumber(), generateRandomNumber(), generateRandomNumber()};
+    glm::vec3 random_color{generateRandomNumber(), generateRandomNumber(), generateRandomNumber()};
     Film film{width, height};
 
     ThreadPool thread_pool{};
@@ -30,14 +30,14 @@ void simple_test() {
     // }
     // serialTimer.conclude();
 
-    Timer parallelTimer{"parallel setPixel"};
-    thread_pool.parallel_for(film.getWidth(), film.getHeight(),
-                             [&film, &randomColor](size_t x, size_t y) -> void {
-                                 film.setPixel(x, y, randomColor);
+    Timer parallel_timer{"parallel setPixel"};
+    thread_pool.parallelFor(film.getWidth(), film.getHeight(),
+                             [&film, &random_color](size_t x, size_t y) -> void {
+                                 film.setPixel(x, y, random_color);
                              });
-    parallelTimer.conclude();
+    parallel_timer.conclude();
 
-    Timer saveTimer("save to file");
+    Timer save_timer("save to file");
     film.save("test.png");
-    saveTimer.conclude();
+    save_timer.conclude();
 }
