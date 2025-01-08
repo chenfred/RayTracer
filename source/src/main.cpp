@@ -1,14 +1,39 @@
+#include "camera/camera.hpp"
 #include "camera/film.hpp"
+#include "shape/sphere.hpp"
 #include "thread/thread_pool.hpp"
 #include "utils/timer.hpp"
 #include <glm/glm.hpp>
 #include <random>
 
+void test_camera_ray_intersect();
 void simple_test();
 int main() {
     // simple_test();
+    test_camera_ray_intersect();
     return 0;
 }
+
+void test_camera_ray_intersect(){
+    size_t width = 1920, height = 1080;
+    Film film{width, height};
+    Sphere sphere{0.5f,glm::vec3{0}};
+    Camera camera{film, {0,0,1}, {0,0,0}, 90};
+    
+    auto paint=[&film, &sphere, &camera](size_t x, size_t y)->void{
+        auto eyeRay = camera.generateEyeRay({x,y});
+        auto hitInfo = sphere.intersect(eyeRay);
+        if(hitInfo.has_value()){
+            film.setPixel(x, y, hitInfo->hitNormal);
+        }
+    };
+
+    ThreadPool pool{128};
+    pool.parallelFor(film.getWidth(), film.getHeight(), paint);
+
+    film.save("sphere.png");
+}
+
 float generateRandomNumber() {
     static std::random_device rd;
     static std::mt19937 gen(rd());
