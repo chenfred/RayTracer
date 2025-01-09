@@ -19,12 +19,12 @@ class ParallelForTask : public Task {
   public:
     ParallelForTask(size_t _x, size_t _y, size_t _chunk_width, size_t _chunk_height,
                     const std::function<void(size_t, size_t)> &_lambda)
-        : x{_x}, y{_y}, chunk_width{_chunk_width}, chunk_height{_chunk_height}, lambda{_lambda} {}
+        : x{_x}, y{_y}, chunkWidth{_chunk_width}, chunkHeight{_chunk_height}, lambda{_lambda} {}
 
     void run() override;
 
   private:
-    size_t x, y, chunk_width, chunk_height;
+    size_t x, y, chunkWidth, chunkHeight;
     std::function<void(size_t, size_t)> lambda;
 };
 

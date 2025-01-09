@@ -3,8 +3,8 @@
 #include <thread>
 
 void ParallelForTask::run() {
-    for (auto i = 0; i < chunk_width; ++i) {
-        for (auto j = 0; j < chunk_height; ++j) {
+    for (auto i = 0; i < chunkWidth; ++i) {
+        for (auto j = 0; j < chunkHeight; ++j) {
             lambda(x + i, y + j);
         }
     }

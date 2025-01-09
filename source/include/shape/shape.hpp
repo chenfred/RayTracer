@@ -1,7 +1,6 @@
 #pragma once
 
 #include "camera/ray.hpp"
-#include <limits>
 #include <optional>
 
 class Shape {
