@@ -7,16 +7,6 @@
 
 // TODO: 修复并理解相机的坐标系和变换（目前是默认的右手系版本）
 Camera::Camera(Film &_film, const glm::vec3 &_pos, const glm::vec3 &direction, float yAngleFOV) : film{_film}, position{_pos} {
-    // glm::mat4 view2clipMat = glm::perspective(glm::radians(yAngleFOV), film.getAspectRatio(), 1.0f, 10.0f);
-    // printMat(view2clipMat);
-    // glm::vec4 v1 = view2clipMat * glm::vec4{0, 0, -10.0, 1};
-    // printVec(v1);
-    // v1 /= v1.w;
-    // printVec(v1);
-    // glm::vec4 v2 = view2clipMat * glm::vec4{0, 0, -1.0, 1};
-    // printVec(v2);
-    // v2 /= v2.w;
-    // printVec(v2);
     clip2cameraMat = glm::inverse(glm::perspective(glm::radians(yAngleFOV), film.getAspectRatio(), 1.0f, 2.0f));
     camera2worldMat = glm::inverse(glm::lookAt(position, position + glm::normalize(direction), {0, 1, 0}));
 }

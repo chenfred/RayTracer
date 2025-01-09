@@ -3,6 +3,7 @@
 #include "glm/fwd.hpp"
 #include "glm/geometric.hpp"
 #include "shape/sphere.hpp"
+#include "shape/triangle.hpp"
 #include "thread/thread_pool.hpp"
 #include "utils/progress_bar.hpp"
 #include "utils/timer.hpp"
@@ -27,6 +28,8 @@ void test_camera_ray_intersect() {
     glm::vec3 light_intensity{5};
 
     Sphere sphere{0.5f, glm::vec3{0}};
+    Triangle triangle{{-0.5, 0.5, 0}, {0.5, 0.5, 0}, {0.5, -0.5, 0}, {-1, 0, 0}, {1, 0, 0}, {0, -1, 0}};
+    Shape &shape{sphere};
     Camera camera{film, {0, 0, 1}, {0, 0, -1}, 90};
 
     ProgressBar progress_bar("Rendering");
@@ -38,7 +41,7 @@ void test_camera_ray_intersect() {
         }
 
         auto eyeRay = camera.generateEyeRay({x, y});
-        auto hitInfo = sphere.intersect(eyeRay);
+        auto hitInfo = shape.intersect(eyeRay);
         if (!hitInfo.has_value()) {
             return;
         }

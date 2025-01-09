@@ -1,6 +1,7 @@
 #include "shape/sphere.hpp"
+#include "utils/utils.hpp"
 
-std::optional<HitInfo> Sphere::intersect(const Ray &ray) const {
+std::optional<HitInfo> Sphere::intersect(const Ray &ray, float t_min, float t_max) const {
     // 计算射线原点到球心的向量
     glm::vec3 oc = ray.getOrigin() - center;
     // 计算一元二次方程的系数
@@ -18,9 +19,9 @@ std::optional<HitInfo> Sphere::intersect(const Ray &ray) const {
     // 计算交点参数t
     float sqrtD = std::sqrt(discriminant);
     float t = (-b - sqrtD) / (2.0f * a);
-    if (t < 0) {
+    if (!in_range(t, t_min, t_max)) {
         t = (-b + sqrtD) / (2.0f * a);
-        if (t < 0) {
+        if (!in_range(t, t_min, t_max)) {
             return std::nullopt;
         }
     }
