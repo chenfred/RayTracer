@@ -40,8 +40,8 @@ void test_model_mesh() {
     triangles.push_back(Triangle{{-0.5, 0.5, 0}, {-0.5, -0.5, 0}, {0.5, -0.5, 0}});
     triangles.push_back(Triangle{{-0.5, 0.5, 0}, {0.5, 0.5, 0}, {-0.5, 0.5, -0.5}});
     triangles.push_back(Triangle{{-0.5, 0.5, -0.5}, {0.5, 0.5, 0}, {0.5, 0.5, -0.5}});
-    Mesh mesh{triangles, diffuse_material};
-    Model model{{mesh}};
+    // Mesh mesh{triangles, diffuse_material};
+    Model model{triangles, diffuse_material};
     Shape &shape{model};
     // Camera
     Camera camera{film, {0, 1, 1}, {0, -1, -1}, 90};
