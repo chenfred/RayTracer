@@ -1,17 +1,16 @@
 #include "camera/camera.hpp"
 #include "camera/film.hpp"
-#include "glm/fwd.hpp"
-#include "glm/geometric.hpp"
 #include "shape/sphere.hpp"
 #include "shape/triangle.hpp"
 #include "thread/thread_pool.hpp"
-#include "utils/progress_bar.hpp"
-#include "utils/timer.hpp"
-#include <cmath>
-#include <format>
-#include <glm/glm.hpp>
+#include "util/progress_bar.hpp"
+#include "util/timer.hpp"
+
 #include <iostream>
+#include <format>
+#include <cmath>
 #include <random>
+#include <glm/glm.hpp>
 
 void test_camera_ray_intersect();
 void simple_test();

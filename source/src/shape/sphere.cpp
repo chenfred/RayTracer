@@ -1,5 +1,5 @@
 #include "shape/sphere.hpp"
-#include "utils/utils.hpp"
+#include "util/utils.hpp"
 
 std::optional<HitInfo> Sphere::intersect(const Ray &ray, float t_min, float t_max) const {
     // 计算射线原点到球心的向量

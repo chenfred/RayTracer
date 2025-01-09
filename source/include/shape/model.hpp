@@ -1,0 +1,34 @@
+#pragma once
+
+#include "shape/mesh.hpp"
+#include "shape/shape.hpp"
+#include "triangle.hpp"
+
+#include <cassert>
+#include <filesystem>
+#include <vector>
+
+
+class Model : Shape {
+  public:
+    Model() = default;
+    Model(const std::filesystem::path &path) { loadObj(path); }
+    Model(const std::vector<Mesh> &_meshes) : meshes{_meshes} {}
+    Model(const std::vector<Triangle> &_triangles); // 简单Model模式，只存一个mesh
+
+    std::optional<HitInfo> intersect(const Ray &ray, float t_min = 1e-5, float t_max = std::numeric_limits<float>::infinity()) const override;
+
+    void addMesh(const Mesh &mesh) { meshes.push_back(mesh); }
+    std::vector<Mesh> &getMeshes() { return meshes; }
+    const std::vector<Mesh> &getMeshes() const { return meshes; }
+
+    // 简单Model模式
+    void addTriangle(const Triangle &tri);
+    std::vector<Triangle> &getTriangles();
+    const std::vector<Triangle> &getTriangles() const;
+
+  private:
+    std::vector<Mesh> meshes;
+
+    void loadObj(const std::filesystem::path &path);
+};

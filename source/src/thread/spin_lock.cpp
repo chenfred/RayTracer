@@ -1,4 +1,5 @@
 #include "thread/spin_lock.hpp"
+
 #include <atomic>
 #include <thread>
 

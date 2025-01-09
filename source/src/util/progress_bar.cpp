@@ -1,4 +1,4 @@
-#include "utils/progress_bar.hpp"
+#include "util/progress_bar.hpp"
 
 #include <format>
 #include <iostream>

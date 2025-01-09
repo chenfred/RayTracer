@@ -1,6 +1,7 @@
 #include "shape/triangle.hpp"
-#include "glm/geometric.hpp"
-#include "utils/utils.hpp"
+#include "util/utils.hpp"
+
+#include <glm/geometric.hpp>
 
 Triangle::Triangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2,
                    const glm::vec3 &n0, const glm::vec3 &n1, const glm::vec3 &n2) {

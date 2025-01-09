@@ -1,5 +1,6 @@
 #include "camera/film.hpp"
 #include "thread/thread_pool.hpp"
+
 #include <cstddef>
 #include <format>
 #include <fstream>
