@@ -3,19 +3,19 @@
 #include <atomic>
 
 class SpinLock {
-  public:
+public:
     void acquire();
     void release();
 
-  private:
+private:
     std::atomic_flag flag{};
 };
 
 class Guard {
-  public:
+public:
     Guard(SpinLock &_spinlock);
     ~Guard();
 
-  private:
+private:
     SpinLock &spinLock;
 };

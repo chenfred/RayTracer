@@ -15,7 +15,6 @@ void ProgressBar::update(double percent) {
         }
     }
     std::cout << std::format("{}: [{}] {:.2f}%\r", name.c_str(), bar.c_str(), percent * 100);
-    // std::cout << name << ": [" << bar << "] " << percent * 100 << "%\r";
     std::cout.flush();
 }
 

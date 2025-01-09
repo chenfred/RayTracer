@@ -2,13 +2,13 @@
 
 #include "thread/spin_lock.hpp" // 添加 SpinLock 头文件
 #include <atomic>
-#include <functional>
 #include <deque>
+#include <functional>
 #include <thread>
 #include <vector>
 
 class Task {
-  public:
+public:
     Task() = default;
     virtual ~Task() = default;
 
@@ -16,20 +16,20 @@ class Task {
 };
 
 class ParallelForTask : public Task {
-  public:
+public:
     ParallelForTask(size_t _x, size_t _y, size_t _chunk_width, size_t _chunk_height,
                     const std::function<void(size_t, size_t)> &_lambda)
         : x{_x}, y{_y}, chunkWidth{_chunk_width}, chunkHeight{_chunk_height}, lambda{_lambda} {}
 
     void run() override;
 
-  private:
+private:
     size_t x, y, chunkWidth, chunkHeight;
     std::function<void(size_t, size_t)> lambda;
 };
 
 class ThreadPool {
-  public:
+public:
     ThreadPool(size_t thread_count = 0);
     ~ThreadPool();
 
@@ -42,7 +42,7 @@ class ThreadPool {
 
     static void WorkerThread(int worker_id, ThreadPool *master);
 
-  private:
+private:
     std::atomic<bool> alive;
     std::atomic<size_t> numPendingTasks;
     std::vector<std::thread> threads;

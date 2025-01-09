@@ -1,4 +1,5 @@
 #include "shape/mesh.hpp"
+#include "camera/ray.hpp"
 #include <optional>
 
 std::optional<HitInfo> Mesh::intersect(const Ray &ray, float t_min, float t_max) const {
@@ -22,5 +23,8 @@ std::optional<HitInfo> Mesh::intersectBrutally(const Ray &ray, float t_min, floa
         }
     }
 
-    return closest_hit;
+    if (!closest_hit) {
+        return std::nullopt;
+    }
+    return HitInfo{closest_hit->t, closest_hit->hitPoint, closest_hit->hitNormal};
 }

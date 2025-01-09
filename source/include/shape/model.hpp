@@ -8,13 +8,13 @@
 #include <filesystem>
 #include <vector>
 
-
 class Model : Shape {
-  public:
+public:
     Model() = default;
     Model(const std::filesystem::path &path) { loadObj(path); }
     Model(const std::vector<Mesh> &_meshes) : meshes{_meshes} {}
-    Model(const std::vector<Triangle> &_triangles); // 简单Model模式，只存一个mesh
+    Model(const std::vector<Triangle> &_triangles) : Model{_triangles, nullptr} {}
+    Model(const std::vector<Triangle> &_triangles, Material *_material); // 简单Model模式，只存一个mesh
 
     std::optional<HitInfo> intersect(const Ray &ray, float t_min = 1e-5, float t_max = std::numeric_limits<float>::infinity()) const override;
 
@@ -26,8 +26,9 @@ class Model : Shape {
     void addTriangle(const Triangle &tri);
     std::vector<Triangle> &getTriangles();
     const std::vector<Triangle> &getTriangles() const;
+    void setMaterial(Material *m);
 
-  private:
+private:
     std::vector<Mesh> meshes;
 
     void loadObj(const std::filesystem::path &path);
