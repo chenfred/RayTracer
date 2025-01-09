@@ -4,6 +4,7 @@
 #include "glm/geometric.hpp"
 #include "shape/sphere.hpp"
 #include "thread/thread_pool.hpp"
+#include "utils/progress_bar.hpp"
 #include "utils/timer.hpp"
 #include <cmath>
 #include <format>
@@ -20,19 +21,27 @@ int main() {
 }
 
 void test_camera_ray_intersect() {
-    size_t width = 3840, height = 2560;
+    size_t width = 2560, height = 1440;
     Film film{width, height};
-    glm::vec3 light_source_pos{2, 2, 2};
+    glm::vec3 light_source_pos{-2, 2, 2};
     glm::vec3 light_intensity{5};
 
     Sphere sphere{0.5f, glm::vec3{0}};
     Camera camera{film, {0, 0, 1}, {0, 0, -1}, 90};
 
+    ProgressBar progress_bar("Rendering");
+    std::atomic<int> rendering_count = 0;
     auto paint = [&](size_t x, size_t y) -> void {
+        rendering_count++;
+        if (rendering_count % film.getWidth() == 0) {
+            progress_bar.update(static_cast<double>(rendering_count) / (width * height));
+        }
+
         auto eyeRay = camera.generateEyeRay({x, y});
         auto hitInfo = sphere.intersect(eyeRay);
-        if (!hitInfo.has_value())
+        if (!hitInfo.has_value()) {
             return;
+        }
 
         const auto &point = hitInfo->hitPoint;
         const auto &normal = hitInfo->hitNormal;
@@ -57,6 +66,7 @@ void test_camera_ray_intersect() {
     ThreadPool pool{};
     pool.parallelFor(film.getWidth(), film.getHeight(), paint);
     pool.wait();
+    progress_bar.done();
     pool_rendering_timer.conclude();
 
     Timer save_film_timer("save film to file (may using ThreadPool)");

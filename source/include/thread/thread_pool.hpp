@@ -3,7 +3,7 @@
 #include "thread/spin_lock.hpp" // 添加 SpinLock 头文件
 #include <atomic>
 #include <functional>
-#include <list>
+#include <deque>
 #include <thread>
 #include <vector>
 
@@ -46,6 +46,6 @@ class ThreadPool {
     std::atomic<bool> alive;
     std::atomic<size_t> numPendingTasks;
     std::vector<std::thread> threads;
-    std::list<Task *> tasks;
+    std::deque<Task *> tasks;
     SpinLock spinLock; // 添加 SpinLock 成员变量
 };
