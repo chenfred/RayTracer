@@ -23,10 +23,11 @@ std::optional<HitInfo> Model::intersect(const Ray &ray, float t_min, float t_max
         }
     }
 
-    if (!closest_hit) {
-        return std::nullopt;
-    }
-    return HitInfo{closest_hit->t, closest_hit->hitPoint, closest_hit->hitNormal};
+    // if (!closest_hit) {
+    //     return std::nullopt;
+    // }
+    // return HitInfo{closest_hit->t, closest_hit->hitPoint, closest_hit->hitNormal, closest_hit->hitMaterial};
+    return closest_hit;
 }
 
 void Model::addTriangle(const Triangle &tri) {

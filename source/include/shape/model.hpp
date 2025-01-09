@@ -8,7 +8,7 @@
 #include <filesystem>
 #include <vector>
 
-class Model : Shape {
+class Model :public Shape {
 public:
     Model() = default;
     Model(const std::filesystem::path &path) { loadObj(path); }

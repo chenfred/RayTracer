@@ -1,23 +1,96 @@
 #include "camera/camera.hpp"
 #include "camera/film.hpp"
+#include "material/diffuse_material.hpp"
 #include "shape/sphere.hpp"
-#include "shape/triangle.hpp"
+// #include "shape/triangle.hpp"
+// #include "shape/mesh.hpp"
+#include "shape/model.hpp"
 #include "thread/thread_pool.hpp"
 #include "util/progress_bar.hpp"
 #include "util/timer.hpp"
 
-#include <iostream>
-#include <format>
 #include <cmath>
-#include <random>
+#include <format>
 #include <glm/glm.hpp>
+#include <iostream>
+#include <random>
+#include <vector>
 
+void test_model_mesh();
 void test_camera_ray_intersect();
 void simple_test();
 int main() {
     // simple_test();
-    test_camera_ray_intersect();
+    // test_camera_ray_intersect();
+    test_model_mesh();
     return 0;
+}
+
+void test_model_mesh() {
+    size_t width = 2560, height = 1440;
+    Film film{width, height};
+    glm::vec3 light_source_pos{-2, 2, 2};
+    glm::vec3 light_intensity{5};
+
+    // Material
+    Material *diffuse_material = new DiffuseMaterial{glm::vec3{1.0}};
+    // Shape
+    std::vector<Triangle> triangles;
+    triangles.push_back(Triangle{{-0.5, 0.5, 0}, {0.5, -0.5, 0}, {0.5, 0.5, 0}});
+    triangles.push_back(Triangle{{-0.5, 0.5, 0}, {-0.5, -0.5, 0}, {0.5, -0.5, 0}});
+    triangles.push_back(Triangle{{-0.5, 0.5, 0}, {0.5, 0.5, 0}, {-0.5, 0.5, -0.5}});
+    triangles.push_back(Triangle{{-0.5, 0.5, -0.5}, {0.5, 0.5, 0}, {0.5, 0.5, -0.5}});
+    Mesh mesh{triangles, diffuse_material};
+    Model model{{mesh}};
+    Shape &shape{model};
+    // Camera
+    Camera camera{film, {0, 1, 1}, {0, -1, -1}, 90};
+    // Renderer
+    ProgressBar progress_bar("Rendering");
+    std::atomic<int> rendering_count = 0;
+    auto paint = [&](size_t x, size_t y) -> void {
+        rendering_count++;
+        if (rendering_count % film.getWidth() == 0) {
+            progress_bar.update(static_cast<double>(rendering_count) / (width * height));
+        }
+
+        auto eyeRay = camera.generateEyeRay({x, y});
+        auto hitInfo = shape.intersect(eyeRay);
+        if (!hitInfo) {
+            return;
+        }
+
+        const auto &point = hitInfo->hitPoint;
+        const auto &normal = hitInfo->hitNormal;
+        const auto *material = hitInfo->hitMaterial;
+        auto lightDir = glm::normalize(light_source_pos - point);
+        auto viewDir = -eyeRay.getDirection();
+        auto halfVector = glm::normalize(lightDir + viewDir);
+        float dist = glm::distance(light_source_pos, point);
+
+        glm::vec3 color{};
+        // specular term
+        color += glm::vec3{0.5} * light_intensity *
+                 std::pow(std::max(0.0f, glm::dot(halfVector, normal)), 128.0f) / dist;
+        // diffuse term
+        glm::vec3 beta{1.0};
+        color += material->sampleBSDF(-lightDir, viewDir, beta) * light_intensity * std::max(0.0f, glm::dot(lightDir, normal)) / dist;
+        // ambient term
+        color += glm::vec3{0.01} * light_intensity;
+
+        film.setPixel(x, y, color);
+    };
+    // Go!
+    Timer pool_rendering_timer("parallel for rendering");
+    ThreadPool pool{};
+    pool.parallelFor(film.getWidth(), film.getHeight(), paint);
+    pool.wait();
+    progress_bar.done();
+    pool_rendering_timer.conclude();
+    // Save result
+    Timer save_film_timer("save film to file (may using ThreadPool)");
+    film.save("sphere.png");
+    save_film_timer.conclude();
 }
 
 void test_camera_ray_intersect() {
