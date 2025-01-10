@@ -22,11 +22,7 @@ std::optional<HitInfo> Model::intersect(const Ray &ray, float t_min, float t_max
             closest_t = hit->t;
         }
     }
-
-    // if (!closest_hit) {
-    //     return std::nullopt;
-    // }
-    // return HitInfo{closest_hit->t, closest_hit->hitPoint, closest_hit->hitNormal, closest_hit->hitMaterial};
+    
     return closest_hit;
 }
 
@@ -56,4 +52,5 @@ void Model::loadObj(const std::filesystem::path &path) {
     }
 
     // TODO: 找个库加载obj文件，先不考虑材质吧
-}
+}
+

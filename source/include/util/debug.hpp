@@ -50,4 +50,5 @@ void print_vec(const glm::vec<L, T, Q>& v) {
         }
     }
     std::cout << "]" << std::endl;
-}
+}
+

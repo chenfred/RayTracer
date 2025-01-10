@@ -32,3 +32,4 @@ std::optional<HitInfo> Sphere::intersect(const Ray &ray, float t_min, float t_ma
 
     return HitInfo{t, hitPoint, hitNormal};
 }
+

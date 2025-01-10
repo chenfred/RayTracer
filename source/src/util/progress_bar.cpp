@@ -28,3 +28,5 @@ void ProgressBar::done() {
     std::cout << std::format("{}: [{}] {:.2f}%\n", name.c_str(), bar.c_str(), 100.0);
     std::cout.flush();
 }
+
+

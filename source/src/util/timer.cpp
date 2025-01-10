@@ -18,4 +18,5 @@ void Timer::conclude() {
         std::cout << "Timer " << name << " concluded in " << duration.count() << " milliseconds." << std::endl;
         alive = false;
     }
-}
+}
+

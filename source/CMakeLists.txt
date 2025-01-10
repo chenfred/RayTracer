@@ -5,3 +5,5 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE include) #${CMAKE_PROJE
 # target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE GLM_FORCE_DEPTH_ZERO_TO_ONE GLM_FORCE_LEFT_HANDED)
 
 target_link_libraries(${CMAKE_PROJECT_NAME} glm stb)
+
+

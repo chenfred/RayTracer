@@ -13,4 +13,5 @@ public:
 private:
     glm::vec3 points[3], normals[3];
     glm::vec2 uvCoords[2];
-};
+};
+

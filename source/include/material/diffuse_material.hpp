@@ -11,4 +11,5 @@ public:
 
 private:
     glm::vec3 albedo;
-};
+};
+

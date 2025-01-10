@@ -23,4 +23,5 @@ private:
 
     void saveToPPM(const std::filesystem::path &path);
     void saveToPNG(const std::filesystem::path &path);
-};
+};
+

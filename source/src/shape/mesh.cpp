@@ -27,4 +27,5 @@ std::optional<HitInfo> Mesh::intersectBrutally(const Ray &ray, float t_min, floa
         return std::nullopt;
     }
     return HitInfo{closest_hit->t, closest_hit->hitPoint, closest_hit->hitNormal, material};
-}
+}
+

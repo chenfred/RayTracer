@@ -19,4 +19,5 @@ Ray Camera::generateEyeRay(const glm::ivec2 &pixel_coord, const glm::vec2 &in_pi
     glm::vec3 world_pos{camera2worldMat * clip2cameraMat * clip_coord};
 
     return Ray(position, glm::normalize(world_pos - position));
-}
+}
+

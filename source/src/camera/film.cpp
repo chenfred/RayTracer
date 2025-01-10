@@ -66,4 +66,5 @@ void Film::saveToPNG(const std::filesystem::path &path) {
     if (result == 0) {
         throw std::runtime_error("Failed to save PNG file.");
     }
-}
+}
+

@@ -18,4 +18,5 @@ public:
 
 private:
     SpinLock &spinLock;
-};
+};
+

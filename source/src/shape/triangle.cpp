@@ -73,4 +73,5 @@ std::optional<HitInfo> Triangle::intersect(const Ray &ray, float t_min, float t_
     glm::vec3 hitNormal = glm::normalize(w * normals[0] + u * normals[1] + v * normals[2]);
 
     return HitInfo{t, hitPoint, hitNormal};
-}
+}
+

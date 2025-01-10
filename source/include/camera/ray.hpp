@@ -19,4 +19,5 @@ struct HitInfo {
     float t;
     glm::vec3 hitPoint, hitNormal;
     const Material *hitMaterial{};
-};
+};
+

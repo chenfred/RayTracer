@@ -32,4 +32,5 @@ private:
     std::vector<Mesh> meshes;
 
     void loadObj(const std::filesystem::path &path);
-};
+};
+

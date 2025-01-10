@@ -22,4 +22,5 @@ Guard::Guard(SpinLock &_spinlock) : spinLock(_spinlock) {
 // 添加 Guard 类的析构函数
 Guard::~Guard() {
     spinLock.release();
-}
+}
+

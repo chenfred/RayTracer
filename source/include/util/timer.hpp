@@ -14,4 +14,5 @@ class Timer{
     bool alive;
     std::string name;
     std::chrono::high_resolution_clock::time_point start;
-};
+};
+

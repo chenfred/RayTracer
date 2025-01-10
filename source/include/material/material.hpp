@@ -13,4 +13,5 @@ public:
 
 private:
     glm::vec3 emissive{};
-};
+};
+

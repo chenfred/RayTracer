@@ -19,6 +19,10 @@
 void test_model_mesh();
 void test_camera_ray_intersect();
 void simple_test();
+
+static const size_t WIDTH = 2560;
+static const size_t HEIGHT = 1440;
+
 int main() {
     // simple_test();
     // test_camera_ray_intersect();
@@ -27,8 +31,7 @@ int main() {
 }
 
 void test_model_mesh() {
-    size_t width = 2560, height = 1440;
-    Film film{width, height};
+    Film film{WIDTH, HEIGHT};
     glm::vec3 light_source_pos{-2, 2, 2};
     glm::vec3 light_intensity{5};
 
@@ -51,7 +54,7 @@ void test_model_mesh() {
     auto paint = [&](size_t x, size_t y) -> void {
         rendering_count++;
         if (rendering_count % film.getWidth() == 0) {
-            progress_bar.update(static_cast<double>(rendering_count) / (width * height));
+            progress_bar.update(static_cast<double>(rendering_count) / (WIDTH * HEIGHT));
         }
 
         auto eyeRay = camera.generateEyeRay({x, y});
@@ -89,13 +92,12 @@ void test_model_mesh() {
     pool_rendering_timer.conclude();
     // Save result
     Timer save_film_timer("save film to file (may using ThreadPool)");
-    film.save("sphere.png");
+    film.save("result.png");
     save_film_timer.conclude();
 }
 
 void test_camera_ray_intersect() {
-    size_t width = 2560, height = 1440;
-    Film film{width, height};
+    Film film{WIDTH, HEIGHT};
     glm::vec3 light_source_pos{-2, 2, 2};
     glm::vec3 light_intensity{5};
 
@@ -109,7 +111,7 @@ void test_camera_ray_intersect() {
     auto paint = [&](size_t x, size_t y) -> void {
         rendering_count++;
         if (rendering_count % film.getWidth() == 0) {
-            progress_bar.update(static_cast<double>(rendering_count) / (width * height));
+            progress_bar.update(static_cast<double>(rendering_count) / (WIDTH * HEIGHT));
         }
 
         auto eyeRay = camera.generateEyeRay({x, y});
@@ -156,17 +158,9 @@ float generateRandomNumber() {
     return dis(gen);
 }
 void simple_test() {
-    size_t width = 800, height = 600;
+    // size_t width = 800, height = 600;
     glm::vec3 random_color{generateRandomNumber(), generateRandomNumber(), generateRandomNumber()};
-    Film film{width, height};
-
-    // Timer serialTimer{"serial setPixel"}; // 添加: 使用 Timer 对象进行计时
-    // for (int x = 0; x < film.getWidth(); x++) {
-    //     for (int y = 0; y < film.getHeight(); y++) {
-    //         film.setPixel(x, y, randomColor);
-    //     }
-    // }
-    // serialTimer.conclude();
+    Film film{WIDTH, HEIGHT};
 
     Timer parallel_timer{"parallel setPixel"};
     ThreadPool thread_pool{};
@@ -181,3 +175,5 @@ void simple_test() {
     film.save("test.png");
     save_timer.conclude();
 }
+
+

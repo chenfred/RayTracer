@@ -12,3 +12,5 @@ class ProgressBar {
     int width;
     std::string name, bar;
 };
+
+
