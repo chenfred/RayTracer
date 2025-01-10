@@ -1,6 +1,7 @@
 #include "shape/model.hpp"
 #include <cassert>
 #include <optional>
+#include <rapidobj/rapidobj.hpp>
 
 Model::Model(const std::vector<Triangle> &_triangles, Material *_material) {
     Mesh mesh{_triangles, _material};
@@ -52,5 +53,6 @@ void Model::loadObj(const std::filesystem::path &path) {
     }
 
     // TODO: 找个库加载obj文件，先不考虑材质吧
-}
+}
+
 
