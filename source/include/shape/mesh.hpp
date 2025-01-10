@@ -22,5 +22,6 @@ private:
     Material *material{};
 
     std::optional<HitInfo> intersectBrutally(const Ray &ray, float t_min, float t_max) const;
-};
+};
+
 

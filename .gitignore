@@ -3,6 +3,7 @@
 .cache/
 build/
 install/
+resources/
 
 # files to ignore
 *.jpg

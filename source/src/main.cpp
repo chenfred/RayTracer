@@ -16,7 +16,7 @@
 #include <random>
 #include <vector>
 
-void test_model_mesh();
+void test_model();
 void test_camera_ray_intersect();
 void simple_test();
 
@@ -26,11 +26,11 @@ static const size_t HEIGHT = 1440;
 int main() {
     // simple_test();
     // test_camera_ray_intersect();
-    test_model_mesh();
+    test_model();
     return 0;
 }
 
-void test_model_mesh() {
+void test_model() {
     Film film{WIDTH, HEIGHT};
     glm::vec3 light_source_pos{-2, 2, 2};
     glm::vec3 light_intensity{5};
@@ -38,13 +38,16 @@ void test_model_mesh() {
     // Material
     Material *diffuse_material = new DiffuseMaterial{glm::vec3{1.0}};
     // Shape
-    std::vector<Triangle> triangles;
-    triangles.push_back(Triangle{{-0.5, 0.5, 0}, {0.5, -0.5, 0}, {0.5, 0.5, 0}});
-    triangles.push_back(Triangle{{-0.5, 0.5, 0}, {-0.5, -0.5, 0}, {0.5, -0.5, 0}});
-    triangles.push_back(Triangle{{-0.5, 0.5, 0}, {0.5, 0.5, 0}, {-0.5, 0.5, -0.5}});
-    triangles.push_back(Triangle{{-0.5, 0.5, -0.5}, {0.5, 0.5, 0}, {0.5, 0.5, -0.5}});
+    // std::vector<Triangle> triangles;
+    // triangles.push_back(Triangle{{-0.5, 0.5, 0}, {0.5, -0.5, 0}, {0.5, 0.5, 0}});
+    // triangles.push_back(Triangle{{-0.5, 0.5, 0}, {-0.5, -0.5, 0}, {0.5, -0.5, 0}});
+    // triangles.push_back(Triangle{{-0.5, 0.5, 0}, {0.5, 0.5, 0}, {-0.5, 0.5, -0.5}});
+    // triangles.push_back(Triangle{{-0.5, 0.5, -0.5}, {0.5, 0.5, 0}, {0.5, 0.5, -0.5}});
     // Mesh mesh{triangles, diffuse_material};
-    Model model{triangles, diffuse_material};
+    // Model model{triangles, diffuse_material};
+    // Model model{"resources/models/dragon_87k.obj"};
+    Model model{"resources/models/simple_dragon.obj"};
+    model.setMaterial(diffuse_material);
     Shape &shape{model};
     // Camera
     Camera camera{film, {0, 1, 1}, {0, -1, -1}, 90};
