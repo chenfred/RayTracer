@@ -8,7 +8,7 @@
 #include <filesystem>
 #include <vector>
 
-class Model :public Shape {
+class Model : public Shape {
 public:
     Model() = default;
     Model(const std::filesystem::path &path) { loadObj(path); }
@@ -17,7 +17,7 @@ public:
     Model(const std::vector<Triangle> &_triangles, Material *_material); // 简单Model模式，只存一个mesh
 
     std::optional<HitInfo> intersect(const Ray &ray, float t_min = 1e-5, float t_max = std::numeric_limits<float>::infinity()) const override;
-
+    void applyTransform(const glm::mat4 &transMat) override;
     void addMesh(const Mesh &mesh) { meshes.push_back(mesh); }
     std::vector<Mesh> &getMeshes() { return meshes; }
     const std::vector<Mesh> &getMeshes() const { return meshes; }
@@ -34,5 +34,3 @@ private:
     void loadObj(const std::filesystem::path &path);
     void loadObjOneMeshed(const std::filesystem::path &path);
 };
-
-

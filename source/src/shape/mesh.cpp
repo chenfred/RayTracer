@@ -27,5 +27,10 @@ std::optional<HitInfo> Mesh::intersectBrutally(const Ray &ray, float t_min, floa
         return std::nullopt;
     }
     return HitInfo{closest_hit->t, closest_hit->hitPoint, closest_hit->hitNormal, material};
-}
+}
 
+void Mesh::applyTransform(const glm::mat4 &transMat) {
+    for (auto &tri : triangles) {
+        tri.applyTransform(transMat);
+    }
+}

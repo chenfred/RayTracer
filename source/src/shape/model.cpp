@@ -27,6 +27,11 @@ std::optional<HitInfo> Model::intersect(const Ray &ray, float t_min, float t_max
     return closest_hit;
 }
 
+void Model::applyTransform(const glm::mat4 &transMat) {
+    for (auto &mesh : meshes) {
+        mesh.applyTransform(transMat);
+    }
+}
 void Model::addTriangle(const Triangle &tri) {
     assert(meshes.size() == 1);
     meshes[0].addTriangle(tri);

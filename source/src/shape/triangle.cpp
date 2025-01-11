@@ -73,5 +73,19 @@ std::optional<HitInfo> Triangle::intersect(const Ray &ray, float t_min, float t_
     glm::vec3 hitNormal = glm::normalize(w * normals[0] + u * normals[1] + v * normals[2]);
 
     return HitInfo{t, hitPoint, hitNormal};
-}
+}
 
+//TODO： 检查正确性并推导法线变换原理
+void Triangle::applyTransform(const glm::mat4 &transMat) {
+    // Transform points using homogeneous coordinates
+    for (int i = 0; i < 3; ++i) {
+        glm::vec4 point_h = transMat * glm::vec4(points[i], 1.0f);
+        points[i] = glm::vec3(point_h) / point_h.w;
+    }
+
+    // Transform normals using the inverse transpose of the transformation matrix
+    glm::mat4 normalMat = glm::transpose(glm::inverse(transMat));
+    for (int i = 0; i < 3; ++i) {
+        normals[i] = glm::normalize(normalMat * glm::vec4(normals[i], 0.0f));
+    }
+}

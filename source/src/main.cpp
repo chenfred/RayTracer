@@ -1,5 +1,7 @@
 #include "camera/camera.hpp"
 #include "camera/film.hpp"
+#include "glm/ext/matrix_transform.hpp"
+#include "glm/trigonometric.hpp"
 #include "material/diffuse_material.hpp"
 #include "shape/sphere.hpp"
 // #include "shape/triangle.hpp"
@@ -12,6 +14,7 @@
 #include <cmath>
 #include <format>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <random>
 #include <vector>
@@ -20,8 +23,8 @@ void test_model();
 void test_camera_ray_intersect();
 void simple_test();
 
-static const size_t WIDTH = 2560;
-static const size_t HEIGHT = 1440;
+static const size_t WIDTH = 192;
+static const size_t HEIGHT = 108;
 
 int main() {
     // simple_test();
@@ -36,7 +39,7 @@ void test_model() {
     glm::vec3 light_intensity{5};
 
     // Material
-    Material *diffuse_material = new DiffuseMaterial{glm::vec3{1.0}};
+    Material *diffuse_material = new DiffuseMaterial{glm::vec3{1}};
     // Shape
     // std::vector<Triangle> triangles;
     // triangles.push_back(Triangle{{-0.5, 0.5, 0}, {0.5, -0.5, 0}, {0.5, 0.5, 0}});
@@ -45,12 +48,18 @@ void test_model() {
     // triangles.push_back(Triangle{{-0.5, 0.5, -0.5}, {0.5, 0.5, 0}, {0.5, 0.5, -0.5}});
     // Mesh mesh{triangles, diffuse_material};
     // Model model{triangles, diffuse_material};
-    // Model model{"resources/models/dragon_87k.obj"};
-    Model model{"resources/models/simple_dragon.obj"};
+    // Model model{"resources/models/simple_dragon.obj"};
+    Model model{"resources/models/dragon_87k.obj"};
     model.setMaterial(diffuse_material);
     Shape &shape{model};
+    // Transform
+    auto transMat = glm::mat4{1.0f};
+    transMat = glm::scale(transMat, glm::vec3{2});
+    transMat = glm::rotate(transMat, glm::radians(90.0f), glm::vec3{0,1,0});
+    // transMat = glm::rotate(transMat, glm::radians(180.0f), {0, 1, 0});
+    model.applyTransform(transMat);
     // Camera
-    Camera camera{film, {0, 1, 1}, {0, -1, -1}, 90};
+    Camera camera{film, {0, 0, 1}, {0, 0, -1}, 90};
     // Renderer
     ProgressBar progress_bar("Rendering");
     std::atomic<int> rendering_count = 0;
@@ -178,5 +187,3 @@ void simple_test() {
     film.save("test.png");
     save_timer.conclude();
 }
-
-
