@@ -1,15 +1,28 @@
 #include "shape/mesh.hpp"
 #include "camera/ray.hpp"
+#include "shape/triangle.hpp"
 #include <optional>
+
+Mesh::Mesh(const std::vector<Triangle> &_triangles, Material *_material) : triangles(_triangles), material{_material} {
+    for (const auto &tri : triangles) {
+        bounds.expand(tri.getBounds());
+    }
+}
 
 std::optional<HitInfo> Mesh::intersect(const Ray &ray, float t_min, float t_max) const {
     return intersectBrutally(ray, t_min, t_max);
 }
 
+// TODO: 得优化一下存取triangle的策略
+void Mesh::addTriangle(const Triangle &tri) {
+    triangles.push_back(tri);
+    bounds.expand(tri.getBounds());
+}
+
 // 暴力遍历求交法
 // TODO: 之后会实现一个BVH求交
 std::optional<HitInfo> Mesh::intersectBrutally(const Ray &ray, float t_min, float t_max) const {
-    if (triangles.empty()) {
+    if (triangles.empty() || !bounds.hasIntersection(ray, t_min, t_max)) {
         return std::nullopt;
     }
 
@@ -32,5 +45,8 @@ std::optional<HitInfo> Mesh::intersectBrutally(const Ray &ray, float t_min, floa
 void Mesh::applyTransform(const glm::mat4 &transMat) {
     for (auto &tri : triangles) {
         tri.applyTransform(transMat);
+    }
+    if (!triangles.empty()) {
+        bounds.applyTransform(transMat);
     }
 }

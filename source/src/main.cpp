@@ -23,8 +23,8 @@ void test_model();
 void test_camera_ray_intersect();
 void simple_test();
 
-static const size_t WIDTH = 192;
-static const size_t HEIGHT = 108;
+static const size_t WIDTH = 1920;
+static const size_t HEIGHT = 1080;
 
 int main() {
     // simple_test();
@@ -56,7 +56,6 @@ void test_model() {
     auto transMat = glm::mat4{1.0f};
     transMat = glm::scale(transMat, glm::vec3{2});
     transMat = glm::rotate(transMat, glm::radians(90.0f), glm::vec3{0,1,0});
-    // transMat = glm::rotate(transMat, glm::radians(180.0f), {0, 1, 0});
     model.applyTransform(transMat);
     // Camera
     Camera camera{film, {0, 0, 1}, {0, 0, -1}, 90};

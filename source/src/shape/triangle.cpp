@@ -1,13 +1,18 @@
 #include "shape/triangle.hpp"
+#include "accelerate/bounds.hpp"
+#include "glm/common.hpp"
 #include "util/utils.hpp"
 
 #include <glm/geometric.hpp>
+#include <optional>
 
 Triangle::Triangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2,
                    const glm::vec3 &n0, const glm::vec3 &n1, const glm::vec3 &n2) {
     points[0] = p0;
     points[1] = p1;
     points[2] = p2;
+    buildBounds();
+
     normals[0] = n0;
     normals[1] = n1;
     normals[2] = n2;
@@ -17,6 +22,8 @@ Triangle::Triangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2
     points[0] = p0;
     points[1] = p1;
     points[2] = p2;
+    buildBounds();
+
     auto e1 = p1 - p0;
     auto e2 = p2 - p0;
     auto n = glm::normalize(glm::cross(e1, e2));
@@ -26,6 +33,10 @@ Triangle::Triangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2
 }
 
 std::optional<HitInfo> Triangle::intersect(const Ray &ray, float t_min, float t_max) const {
+    if (!bounds.hasIntersection(ray, t_min, t_max)) {
+        return std::nullopt;
+    }
+
     // Möller–Trumbore intersection algorithm
     const glm::vec3 &v0 = points[0];
     const glm::vec3 &v1 = points[1];
@@ -75,7 +86,7 @@ std::optional<HitInfo> Triangle::intersect(const Ray &ray, float t_min, float t_
     return HitInfo{t, hitPoint, hitNormal};
 }
 
-//TODO： 检查正确性并推导法线变换原理
+// TODO： 检查正确性并推导法线变换原理
 void Triangle::applyTransform(const glm::mat4 &transMat) {
     // Transform points using homogeneous coordinates
     for (int i = 0; i < 3; ++i) {
@@ -88,4 +99,18 @@ void Triangle::applyTransform(const glm::mat4 &transMat) {
     for (int i = 0; i < 3; ++i) {
         normals[i] = glm::normalize(normalMat * glm::vec4(normals[i], 0.0f));
     }
+    
+    // Transform bounding box
+    bounds.applyTransform(transMat);
+}
+
+void Triangle::buildBounds() {
+    auto posMin = points[0], posMax = points[0];
+    for (auto i = 1; i < 3; ++i) {
+        posMin = glm::min(posMin, points[i]);
+        posMax = glm::max(posMax, points[i]);
+    }
+    bounds = Bounds{posMin, posMax};
+    // bounds.print();
+    // assert(posMin.x < posMax.x && posMin.y < posMax.y && posMin.z < posMax.z);
 }

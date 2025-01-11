@@ -1,5 +1,6 @@
 #pragma once
 
+#include "accelerate/bounds.hpp"
 #include <glm/glm.hpp>
 #include <iostream>
 #include <format>
@@ -50,5 +51,4 @@ void print_vec(const glm::vec<L, T, Q>& v) {
         }
     }
     std::cout << "]" << std::endl;
-}
-
+}

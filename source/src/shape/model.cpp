@@ -3,14 +3,18 @@
 #include <optional>
 #include <rapidobj/rapidobj.hpp>
 
+Model::Model(const std::vector<Mesh> &_meshes) : meshes{_meshes} {
+    for (const auto &mesh : meshes) {
+        bounds.expand(mesh.getBounds());
+    }
+}
 Model::Model(const std::vector<Triangle> &_triangles, Material *_material) {
-    Mesh mesh{_triangles, _material};
     meshes.reserve(1);
-    meshes.push_back(mesh);
+    addMesh({_triangles, _material});
 }
 
 std::optional<HitInfo> Model::intersect(const Ray &ray, float t_min, float t_max) const {
-    if (meshes.empty()) {
+    if (meshes.empty() || !bounds.hasIntersection(ray, t_min, t_max)) {
         return std::nullopt;
     }
 
@@ -31,6 +35,14 @@ void Model::applyTransform(const glm::mat4 &transMat) {
     for (auto &mesh : meshes) {
         mesh.applyTransform(transMat);
     }
+    if (!meshes.empty()) {
+        bounds.applyTransform(transMat);
+    }
+}
+
+void Model::addMesh(const Mesh &mesh) {
+    meshes.push_back(mesh);
+    bounds.expand(mesh.getBounds());
 }
 void Model::addTriangle(const Triangle &tri) {
     assert(meshes.size() == 1);
@@ -116,6 +128,7 @@ void Model::loadObj(const std::filesystem::path &path) {
         }
         // 将 mesh 添加到模型中
         meshes.emplace_back(mesh);
+        bounds.expand(mesh.getBounds());
     }
 }
 void Model::loadObjOneMeshed(const std::filesystem::path &path) {
