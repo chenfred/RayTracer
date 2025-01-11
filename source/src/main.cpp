@@ -1,15 +1,16 @@
 #include "camera/camera.hpp"
 #include "camera/film.hpp"
 #include "glm/ext/matrix_transform.hpp"
+#include "glm/geometric.hpp"
 #include "glm/trigonometric.hpp"
 #include "material/diffuse_material.hpp"
-#include "shape/sphere.hpp"
-// #include "shape/triangle.hpp"
-// #include "shape/mesh.hpp"
 #include "shape/model.hpp"
+#include "shape/plane.hpp"
+#include "shape/sphere.hpp"
 #include "thread/thread_pool.hpp"
 #include "util/progress_bar.hpp"
 #include "util/timer.hpp"
+
 
 #include <cmath>
 #include <format>
@@ -41,22 +42,19 @@ void test_model() {
     // Material
     Material *diffuse_material = new DiffuseMaterial{glm::vec3{1}};
     // Shape
-    // std::vector<Triangle> triangles;
-    // triangles.push_back(Triangle{{-0.5, 0.5, 0}, {0.5, -0.5, 0}, {0.5, 0.5, 0}});
-    // triangles.push_back(Triangle{{-0.5, 0.5, 0}, {-0.5, -0.5, 0}, {0.5, -0.5, 0}});
-    // triangles.push_back(Triangle{{-0.5, 0.5, 0}, {0.5, 0.5, 0}, {-0.5, 0.5, -0.5}});
-    // triangles.push_back(Triangle{{-0.5, 0.5, -0.5}, {0.5, 0.5, 0}, {0.5, 0.5, -0.5}});
-    // Mesh mesh{triangles, diffuse_material};
-    // Model model{triangles, diffuse_material};
+    
     // Model model{"resources/models/simple_dragon.obj"};
     Model model{"resources/models/dragon_87k.obj"};
     model.setMaterial(diffuse_material);
-    Shape &shape{model};
-    // Transform
     auto transMat = glm::mat4{1.0f};
     transMat = glm::scale(transMat, glm::vec3{2});
-    transMat = glm::rotate(transMat, glm::radians(90.0f), glm::vec3{0,1,0});
+    transMat = glm::rotate(transMat, glm::radians(90.0f), glm::vec3{0, 1, 0});
     model.applyTransform(transMat);
+    Shape &shape{model};
+
+    // Plane plane{{0, 0, 0}, glm::normalize(glm::vec3{-1, 1, 0.1}), diffuse_material};
+    // Shape &shape{plane};
+
     // Camera
     Camera camera{film, {0, 0, 1}, {0, 0, -1}, 90};
     // Renderer

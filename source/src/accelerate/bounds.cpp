@@ -29,6 +29,9 @@ void Bounds::expand(const Bounds &bounds) {
 }
 
 void Bounds::applyTransform(const glm::mat4 transMat) {
-    posMin = glm::vec3{transMat * glm::vec4(posMin, 1.0f)};
-    posMax = glm::vec3{transMat * glm::vec4(posMax, 1.0f)};
+    glm::vec4 posMin_h = transMat * glm::vec4(posMin, 1.0f);
+    posMin = glm::vec3{posMin_h / posMin_h.w};
+
+    glm::vec4 posMax_h = transMat * glm::vec4(posMax, 1.0f);
+    posMax = glm::vec3{posMax_h / posMax_h.w};
 }
