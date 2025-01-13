@@ -11,7 +11,6 @@
 #include "util/progress_bar.hpp"
 #include "util/timer.hpp"
 
-
 #include <cmath>
 #include <format>
 #include <glm/glm.hpp>
@@ -41,7 +40,7 @@ void test_model() {
 
     // Material
     Material *diffuse_material = new DiffuseMaterial{glm::vec3{1}};
-    
+
     // Shape
     // Model model{"resources/models/simple_dragon.obj"};
     Model model{"resources/models/dragon_87k.obj"};
@@ -61,17 +60,13 @@ void test_model() {
     ProgressBar progress_bar("Rendering");
     std::atomic<int> rendering_count = 0;
     auto paint = [&](size_t x, size_t y) -> void {
-        rendering_count++;
-        if (rendering_count % film.getWidth() == 0) {
-            progress_bar.update(static_cast<double>(rendering_count) / (WIDTH * HEIGHT));
-        }
-
+        int num_finished_pixels = ++rendering_count;
+        // casting ray
         auto eyeRay = camera.generateEyeRay({x, y});
         auto hitInfo = shape.intersect(eyeRay);
         if (!hitInfo) {
             return;
         }
-
         const auto &point = hitInfo->hitPoint;
         const auto &normal = hitInfo->hitNormal;
         const auto *material = hitInfo->hitMaterial;
@@ -79,7 +74,7 @@ void test_model() {
         auto viewDir = -eyeRay.getDirection();
         auto halfVector = glm::normalize(lightDir + viewDir);
         float dist = glm::distance(light_source_pos, point);
-
+        // shading
         glm::vec3 color{};
         // specular term
         color += glm::vec3{0.5} * light_intensity *
@@ -89,8 +84,12 @@ void test_model() {
         color += material->sampleBSDF(-lightDir, viewDir, beta) * light_intensity * std::max(0.0f, glm::dot(lightDir, normal)) / dist;
         // ambient term
         color += glm::vec3{0.01} * light_intensity;
-
+        // write to framebuffer
         film.setPixel(x, y, color);
+        // progress bar
+        if (num_finished_pixels % film.getWidth() == 0) {
+            progress_bar.update(static_cast<double>(num_finished_pixels) / (WIDTH * HEIGHT));
+        }
     };
     // Go!
     Timer pool_rendering_timer("parallel for rendering");
