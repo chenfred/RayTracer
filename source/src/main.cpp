@@ -24,8 +24,8 @@ void test_model();
 void test_camera_ray_intersect();
 void simple_test();
 
-static const size_t WIDTH = 1920;
-static const size_t HEIGHT = 1080;
+static const size_t WIDTH = 1280;
+static const size_t HEIGHT = 720;
 
 int main() {
     // simple_test();
@@ -41,8 +41,8 @@ void test_model() {
 
     // Material
     Material *diffuse_material = new DiffuseMaterial{glm::vec3{1}};
-    // Shape
     
+    // Shape
     // Model model{"resources/models/simple_dragon.obj"};
     Model model{"resources/models/dragon_87k.obj"};
     model.setMaterial(diffuse_material);
