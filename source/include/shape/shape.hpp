@@ -2,6 +2,7 @@
 
 #include "accelerate/bounds.hpp"
 #include "camera/ray.hpp"
+
 #include <limits>
 #include <optional>
 
@@ -11,6 +12,12 @@ public:
     virtual ~Shape() = default;
 
     virtual std::optional<HitInfo> intersect(const Ray &ray, float t_min = 1e-5, float t_max = std::numeric_limits<float>::infinity()) const = 0;
-    virtual void applyTransform(const glm::mat4 &transMat) = 0;
-    virtual Bounds getBounds() const { return {}; }
+    virtual std::optional<Bounds> getBounds() const { return std::nullopt; }
+};
+
+struct ShapeInstance {
+    const Shape &shape;
+    glm::mat4 model2worldMat, world2modelMat;
+    std::optional<Bounds> bounds;
+    const Material *material{};
 };

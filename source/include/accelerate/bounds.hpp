@@ -13,13 +13,16 @@ public:
     Bounds(const glm::vec3 &_posMin, const glm::vec3 &_posMax) : posMin(_posMin), posMax(_posMax) {}
 
     bool hasIntersection(const Ray &ray, float t_min, float t_max) const;
+    Bounds transformedBounds(const glm::mat4 transMat) const;
+    glm::vec3 diagonal() const { return posMax - posMin; }
+    glm::vec3 center() const { return (posMin + posMax) * 0.5f; }
+    glm::vec3 corner(size_t index) const;
 
     void expand(const glm::vec3 &pos);
     void expand(const Bounds &bounds);
-    void applyTransform(const glm::mat4 transMat);
-    void print() {
-        std::cout << std::format("Bounds: ({},{},{})->({},{},{})", posMin.x, posMin.y, posMin.z, posMax.x, posMax.y, posMax.z) << std::endl;
-    }
+
+    // for debug
+    void print() const { std::cout << std::format("Bounds: ({},{},{})->({},{},{})", posMin.x, posMin.y, posMin.z, posMax.x, posMax.y, posMax.z) << std::endl; }
 
 private:
     glm::vec3 posMin, posMax;

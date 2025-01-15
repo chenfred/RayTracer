@@ -1,6 +1,8 @@
 #include "accelerate/bounds.hpp"
 #include "glm/common.hpp"
 
+#include <stdexcept>
+
 // TODO: 有空再推一下
 bool Bounds::hasIntersection(const Ray &ray, float t_min, float t_max) const {
     auto t1 = (posMin - ray.getOrigin()) / ray.getDirection();
@@ -28,10 +30,31 @@ void Bounds::expand(const Bounds &bounds) {
     posMax = glm::max(posMax, bounds.posMax);
 }
 
-void Bounds::applyTransform(const glm::mat4 transMat) {
-    glm::vec4 posMin_h = transMat * glm::vec4(posMin, 1.0f);
-    posMin = glm::vec3{posMin_h / posMin_h.w};
+Bounds Bounds::transformedBounds(const glm::mat4 transMat) const {
+    Bounds bounds{};
 
-    glm::vec4 posMax_h = transMat * glm::vec4(posMax, 1.0f);
-    posMax = glm::vec3{posMax_h / posMax_h.w};
+    for (size_t index = 0; index < 8; ++index) {
+        auto corner = this->corner(index);
+        bounds.expand(glm::vec3(transMat * glm::vec4(corner, 1)));
+    }
+    return bounds;
+}
+
+glm::vec3 Bounds::corner(size_t index) const {
+    if (index >= 8) {
+        throw std::out_of_range("Bounds::corner(size_t index) index must less than 8.");
+    }
+
+    auto corner = posMax;
+    // 用3个bit位来控制某个维度(x, y, z)为min或max
+    if ((index & 0b001) == 0) {
+        corner.x = posMin.x;
+    }
+    if ((index & 0b010) == 0) {
+        corner.y = posMin.y;
+    }
+    if ((index & 0b100) == 0) {
+        corner.z = posMin.z;
+    }
+    return corner;
 }

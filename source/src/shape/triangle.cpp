@@ -11,7 +11,7 @@ Triangle::Triangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2
     points[0] = p0;
     points[1] = p1;
     points[2] = p2;
-    buildBounds();
+    bounds = buildBounds();
 
     normals[0] = n0;
     normals[1] = n1;
@@ -22,7 +22,7 @@ Triangle::Triangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2
     points[0] = p0;
     points[1] = p1;
     points[2] = p2;
-    buildBounds();
+    bounds = buildBounds();
 
     auto e1 = p1 - p0;
     auto e2 = p2 - p0;
@@ -86,31 +86,11 @@ std::optional<HitInfo> Triangle::intersect(const Ray &ray, float t_min, float t_
     return HitInfo{t, hitPoint, hitNormal};
 }
 
-// TODO： 检查正确性并推导法线变换原理
-void Triangle::applyTransform(const glm::mat4 &transMat) {
-    // Transform points using homogeneous coordinates
-    for (int i = 0; i < 3; ++i) {
-        glm::vec4 point_h = transMat * glm::vec4(points[i], 1.0f);
-        points[i] = glm::vec3(point_h) / point_h.w;
-    }
-
-    // Transform normals using the inverse transpose of the transformation matrix
-    glm::mat4 normalMat = glm::transpose(glm::inverse(transMat));
-    for (int i = 0; i < 3; ++i) {
-        normals[i] = glm::normalize(normalMat * glm::vec4(normals[i], 0.0f));
-    }
-    
-    // Transform bounding box
-    bounds.applyTransform(transMat);
-}
-
-void Triangle::buildBounds() {
+Bounds Triangle::buildBounds() {
     auto posMin = points[0], posMax = points[0];
     for (auto i = 1; i < 3; ++i) {
         posMin = glm::min(posMin, points[i]);
         posMax = glm::max(posMax, points[i]);
     }
-    bounds = Bounds{posMin, posMax};
-    // bounds.print();
-    // assert(posMin.x < posMax.x && posMin.y < posMax.y && posMin.z < posMax.z);
+    return Bounds{posMin, posMax};
 }

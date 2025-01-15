@@ -7,22 +7,17 @@
 
 class Mesh : public Shape {
 public:
-    Mesh() = default;
-    Mesh(const std::vector<Triangle> &_triangles) : Mesh(_triangles, nullptr) {}
-    Mesh(const std::vector<Triangle> &_triangles, Material *_material);
+    Mesh(const std::vector<Triangle> &_triangles, const Material *_material);
 
     std::optional<HitInfo> intersect(const Ray &ray, float t_min = 1e-5, float t_max = std::numeric_limits<float>::infinity()) const override;
-    void applyTransform(const glm::mat4 &transMat) override;
-    void addTriangle(const Triangle &tri);
-    std::vector<Triangle> &getTriangles() { return triangles; }
-    const std::vector<Triangle> &getTriangles() const { return triangles; }
-    Bounds getBounds() const override {return bounds;}
-    void setMaterial(Material *m) { material = m; }
+    std::optional<Bounds> getBounds() const override {return bounds;}
+    
+    void setMaterial(const Material *m) { material = m; }
 
 private:
     std::vector<Triangle> triangles;
-    Bounds bounds{};
-    Material *material{};
+    const Material *material;
+    Bounds bounds;
 
     std::optional<HitInfo> intersectBrutally(const Ray &ray, float t_min, float t_max) const;
 };

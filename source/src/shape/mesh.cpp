@@ -3,20 +3,14 @@
 #include "shape/triangle.hpp"
 #include <optional>
 
-Mesh::Mesh(const std::vector<Triangle> &_triangles, Material *_material) : triangles(_triangles), material{_material} {
+Mesh::Mesh(const std::vector<Triangle> &_triangles, const Material *_material) : triangles(_triangles), material{_material} {
     for (const auto &tri : triangles) {
-        bounds.expand(tri.getBounds());
+        bounds.expand(tri.getBounds().value());
     }
 }
 
 std::optional<HitInfo> Mesh::intersect(const Ray &ray, float t_min, float t_max) const {
     return intersectBrutally(ray, t_min, t_max);
-}
-
-// TODO: 得优化一下存取triangle的策略
-void Mesh::addTriangle(const Triangle &tri) {
-    triangles.push_back(tri);
-    bounds.expand(tri.getBounds());
 }
 
 // 暴力遍历求交法
@@ -27,12 +21,12 @@ std::optional<HitInfo> Mesh::intersectBrutally(const Ray &ray, float t_min, floa
     }
 
     std::optional<HitInfo> closest_hit;
-    float closest_t = t_max;
+    float closet_t = t_max;
     for (const auto &triangle : triangles) {
-        auto hit = triangle.intersect(ray, t_min, closest_t);
+        auto hit = triangle.intersect(ray, t_min, closet_t);
         if (hit) {
             closest_hit = hit;
-            closest_t = hit->t;
+            closet_t = hit->t;
         }
     }
 
@@ -40,13 +34,4 @@ std::optional<HitInfo> Mesh::intersectBrutally(const Ray &ray, float t_min, floa
         return std::nullopt;
     }
     return HitInfo{closest_hit->t, closest_hit->hitPoint, closest_hit->hitNormal, material};
-}
-
-void Mesh::applyTransform(const glm::mat4 &transMat) {
-    for (auto &tri : triangles) {
-        tri.applyTransform(transMat);
-    }
-    if (!triangles.empty()) {
-        bounds.applyTransform(transMat);
-    }
 }

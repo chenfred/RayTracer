@@ -17,5 +17,6 @@ private:
     Film &film;
     glm::vec3 position;
     glm::mat4 clip2cameraMat, camera2worldMat;
-};
+};
+
 
