@@ -2,7 +2,7 @@
 
 glm::vec3 DirectShadingRenderer::renderPixel(size_t x, size_t y) const {
     // casting ray
-    auto eyeRay = camera.generateEyeRay({x, y});
+    auto eyeRay = camera.generateEyeRay({x, y}, {rng.uniform(), rng.uniform()});
     auto hitInfo = scene.intersect(eyeRay);
     if (!hitInfo) {
         return {};

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "renderer.hpp"
+#include "util/rng.hpp"
 
 struct PointLight {
     glm::vec3 position, intensity;
@@ -17,6 +18,7 @@ public:
 
 private:
     std::vector<PointLight> pointLights;
+    RNG rng{};
 
     glm::vec3 renderPixel(size_t x, size_t y) const override;
 };
