@@ -1,4 +1,5 @@
 #include "camera/film.hpp"
+#include "glm/exponential.hpp"
 #include "thread/thread_pool.hpp"
 
 #include <cstddef>
@@ -12,7 +13,7 @@ Film::Film(size_t _width, size_t _height) : width{_width}, height{_height} {
     pixels.resize(width * height);
 }
 
-void Film::save(const std::filesystem::path &path) {
+void Film::save(const std::filesystem::path &path) const {
     std::string ext = path.extension().string();
     if (ext == ".ppm") {
         saveToPPM(path);
@@ -23,7 +24,7 @@ void Film::save(const std::filesystem::path &path) {
     }
 }
 
-void Film::saveToPPM(const std::filesystem::path &path) {
+void Film::saveToPPM(const std::filesystem::path &path) const {
     std::ofstream file(path, std::ios::binary);
     file << "P6\n"
          << width << " " << height << "\n255\n";
@@ -39,7 +40,7 @@ void Film::saveToPPM(const std::filesystem::path &path) {
     }
 }
 
-void Film::saveToPNG(const std::filesystem::path &path) {
+void Film::saveToPNG(const std::filesystem::path &path) const {
     // 将文件名从宽字符转换为 UTF-8 编码
     auto u8path = path.u8string();
     const char *utf8Path = reinterpret_cast<const char *>(u8path.data());
@@ -66,5 +67,4 @@ void Film::saveToPNG(const std::filesystem::path &path) {
     if (result == 0) {
         throw std::runtime_error("Failed to save PNG file.");
     }
-}
-
+}

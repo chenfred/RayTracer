@@ -4,6 +4,7 @@
 #include "shape/model.hpp"
 #include "shape/plane.hpp"
 #include "shape/scene.hpp"
+#include "shape/sphere.hpp"
 #include "thread/thread_pool.hpp"
 #include "util/progress_bar.hpp"
 #include "util/timer.hpp"
@@ -33,15 +34,18 @@ void test_scene() {
     // Scene
     // Model model{"resources/models/simple_dragon.obj"};
     Model model{"resources/models/dragon_87k.obj", diffuse_material};
-    Plane plane{{0, -1, 0}, {0, 1, 0.1}, diffuse_material};
+    Sphere sphere{0.5, {0, 0, 0}, diffuse_material};
+    Plane plane{{0, 0, 0}, {0, 1, 0}, diffuse_material};
 
     Scene scene;
-    scene.addShape(model, {-0.5, 0, 0});
-    scene.addShape(model, {0.5, 0, 0});
-    scene.addShape(plane);
+    // scene.addShape(model, {-0.5, 0, 0});
+    // scene.addShape(model, {0.5, 0, 0});
+    scene.addShape(model);
+    scene.addShape(sphere, {0, 0, 1});
+    scene.addShape(plane, {0, -0.5, 0});
 
     // Camera
-    Camera camera{film, {0, 0, 1}, {0, 0, -1}, 90};
+    Camera camera{film, {1, 0, 0}, {-1, 0, 0}, 90};
     // Renderer
     ProgressBar progress_bar("Rendering");
     std::atomic<int> rendering_count = 0;

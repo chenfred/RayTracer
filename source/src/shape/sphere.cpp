@@ -30,6 +30,5 @@ std::optional<HitInfo> Sphere::intersect(const Ray &ray, float t_min, float t_ma
     glm::vec3 hitPoint = ray.getOrigin() + t * ray.getDirection();
     glm::vec3 hitNormal = glm::normalize(hitPoint - center);
 
-    return HitInfo{t, hitPoint, hitNormal};
+    return HitInfo{t, hitPoint, hitNormal, material};
 }
-
