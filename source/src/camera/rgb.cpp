@@ -10,20 +10,20 @@ RGB::RGB(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 RGB::RGB(const glm::ivec3 &color) {
-    for (auto i = 0; i < 3; ++i) {
+    for (size_t i = 0; i < channels.size(); ++i) {
         channels[i] = color[i];
     }
 }
 
 RGB::RGB(const glm::vec3 &radiance) {
-    for (auto i = 0; i < 3; ++i) {
+    for (size_t i = 0; i < channels.size(); ++i) {
         channels[i] = static_cast<uint8_t>(std::clamp(std::pow(radiance[i], 1 / 2.2f) * 255.0f, 0.0f, 255.0f));
     }
 }
 
 glm::vec3 RGB::radiance() const {
     glm::vec3 rad;
-    for (auto i = 0; i < 3; ++i) {
+    for (size_t i = 0; i < channels.size(); ++i) {
         rad[i] = std::pow(channels[i] / 255.0f, 2.2f);
     }
     return rad;
