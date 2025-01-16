@@ -22,8 +22,8 @@ int main() {
 
 void test_renderer() {
     Film film{WIDTH, HEIGHT};
-    glm::vec3 light_source_pos{0, 2, -2};
-    glm::vec3 light_intensity{1};
+    glm::vec3 light_pos{0, 2, -2};
+    glm::vec3 light_intensity{5};
 
     // Material
     Material *diffuse_material = new DiffuseMaterial{glm::vec3{1}};
@@ -43,9 +43,9 @@ void test_renderer() {
     Camera camera{film, {1.6, 0, 0}, {0, 0, 0}, 90};
 
     // Renderer
-    DirectShadingRenderer directShadingRenderer{camera, scene, light_source_pos, light_intensity};
+    DirectShadingRenderer directShadingRenderer{camera, scene, light_pos, light_intensity};
     Renderer &renderer{directShadingRenderer};
 
     // Go!
-    renderer.render("result.png");
+    renderer.render("./result.png");
 }

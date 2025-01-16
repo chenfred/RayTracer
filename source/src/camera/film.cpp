@@ -14,12 +14,12 @@ Film::Film(size_t _width, size_t _height) : width{_width}, height{_height} {
     pixels.resize(width * height);
 }
 
-void Film::save(const std::filesystem::path &path) const {
+void Film::save(const std::filesystem::path &path, ThreadPool *threadPool) const {
     std::string ext = path.extension().string();
     if (ext == ".ppm") {
         saveToPPM(path);
     } else if (ext == ".png") {
-        saveToPNG(path);
+        saveToPNG(path, threadPool);
     } else {
         throw std::runtime_error(std::format("Format {} not implemented yet.", ext)); // 使用 std::format 进行字符串格式化
     }
@@ -36,16 +36,11 @@ void Film::saveToPPM(const std::filesystem::path &path) const {
             for (const auto channel : rgb.rgb()) {
                 file << channel;
             }
-            // const auto &color = getPixel(x, y);
-            // glm::ivec3 icolor = glm::clamp(color * 255.0f, 0.0f, 255.0f);
-            // for (auto i = 0; i < 3; ++i) {
-            //     file << static_cast<uint8_t>(icolor[i]);
-            // }
         }
     }
 }
 
-void Film::saveToPNG(const std::filesystem::path &path) const {
+void Film::saveToPNG(const std::filesystem::path &path, ThreadPool *threadPool) const {
     // 将文件名从宽字符转换为 UTF-8 编码
     auto u8path = path.u8string();
     const char *utf8Path = reinterpret_cast<const char *>(u8path.data());
@@ -62,18 +57,19 @@ void Film::saveToPNG(const std::filesystem::path &path) const {
             index++;
         }
         pixelData[index] = 255; // alpha通道设置为1.0
-        // const auto &color = getPixel(x, y);
-        // glm::ivec3 icolor = glm::clamp(color * 255.0f, 0.0f, 255.0f);
-        // size_t index = (y * width + x) * 4;
-        // pixelData[index + 0] = static_cast<uint8_t>(icolor[0]);
-        // pixelData[index + 1] = static_cast<uint8_t>(icolor[1]);
-        // pixelData[index + 2] = static_cast<uint8_t>(icolor[2]);
-        // pixelData[index + 3] = 255; // alpha通道设置为1.0
     };
-    // 用线程池执行并发写入
-    ThreadPool pool{};
-    pool.parallelFor(height, width, f_loadingPixelData);
-    pool.wait();
+
+    if (threadPool) {
+        // 用线程池执行并发写入
+        threadPool->parallelFor(height, width, f_loadingPixelData);
+        threadPool->wait();
+    } else {
+        for (size_t y = 0; y < height; ++y) {
+            for (size_t x = 0; x < width; ++x) {
+                f_loadingPixelData(y, x);
+            }
+        }
+    }
 
     // 使用 stbi_write_png 保存 PNG 文件，指定通道数为4
     int result = stbi_write_png(utf8Path, static_cast<int>(width), static_cast<int>(height), 4, pixelData.data(), 0);

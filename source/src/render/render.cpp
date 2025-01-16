@@ -36,5 +36,5 @@ void Renderer::render(const std::filesystem::path &savePath) {
     bar.done();
     timer.conclude();
 
-    film.save(savePath);
+    film.save(savePath, &threadPool);
 }
