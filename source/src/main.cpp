@@ -26,7 +26,7 @@ int main() {
 void test_scene() {
     Film film{WIDTH, HEIGHT};
     glm::vec3 light_source_pos{0, 2, -2};
-    glm::vec3 light_intensity{5};
+    glm::vec3 light_intensity{1};
 
     // Material
     Material *diffuse_material = new DiffuseMaterial{glm::vec3{1}};

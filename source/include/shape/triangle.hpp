@@ -3,6 +3,8 @@
 #include "accelerate/bounds.hpp"
 #include "shape.hpp"
 
+#include <array>
+
 class Triangle : public Shape {
 public:
     Triangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2,
@@ -13,9 +15,9 @@ public:
     std::optional<Bounds> getBounds() const override { return bounds; }
 
 private:
-    glm::vec3 points[3], normals[3];
-    glm::vec2 uvCoords[2];
+    std::array<glm::vec3, 3> points, normals;
+    std::array<glm::vec2, 3> uvCoords;
     Bounds bounds;
-    
+
     Bounds buildBounds();
 };
