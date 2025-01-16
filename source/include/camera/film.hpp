@@ -19,10 +19,8 @@ public:
 
 private:
     size_t width, height;
-    std::vector<glm::vec3> pixels;
+    std::vector<glm::vec3> pixels; // 范围是[0,1]^3，存放算好的三通道Radiance而非最后的Color
 
     void saveToPPM(const std::filesystem::path &path) const;
     void saveToPNG(const std::filesystem::path &path) const;
 };
-
-

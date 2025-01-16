@@ -32,8 +32,8 @@ void test_scene() {
     Material *diffuse_material = new DiffuseMaterial{glm::vec3{1}};
 
     // Scene
-    // Model model{"resources/models/simple_dragon.obj", diffuse_material};
-    Model model{"resources/models/dragon_87k.obj", diffuse_material};
+    Model model{"resources/models/simple_dragon.obj", diffuse_material};
+    // Model model{"resources/models/dragon_87k.obj", diffuse_material};
     Sphere sphere{0.5, {0, 0, 0}, diffuse_material};
     Plane plane{{0, 0, 0}, {0, 1, 0}, diffuse_material};
 
