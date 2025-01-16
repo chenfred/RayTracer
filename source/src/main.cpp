@@ -15,8 +15,8 @@
 
 void test_scene();
 
-static const size_t WIDTH = 1280;
-static const size_t HEIGHT = 720;
+static const size_t WIDTH = 1920;
+static const size_t HEIGHT = 1080;
 
 int main() {
     test_scene();
@@ -25,14 +25,14 @@ int main() {
 
 void test_scene() {
     Film film{WIDTH, HEIGHT};
-    glm::vec3 light_source_pos{0, 2, 2};
+    glm::vec3 light_source_pos{0, 2, -2};
     glm::vec3 light_intensity{5};
 
     // Material
     Material *diffuse_material = new DiffuseMaterial{glm::vec3{1}};
 
     // Scene
-    // Model model{"resources/models/simple_dragon.obj"};
+    // Model model{"resources/models/simple_dragon.obj", diffuse_material};
     Model model{"resources/models/dragon_87k.obj", diffuse_material};
     Sphere sphere{0.5, {0, 0, 0}, diffuse_material};
     Plane plane{{0, 0, 0}, {0, 1, 0}, diffuse_material};
@@ -40,12 +40,12 @@ void test_scene() {
     Scene scene;
     // scene.addShape(model, {-0.5, 0, 0});
     // scene.addShape(model, {0.5, 0, 0});
-    scene.addShape(model);
-    scene.addShape(sphere, {0, 0, 1});
+    scene.addShape(model, {-1, 0, -0.5}, glm::vec3{2});
+    scene.addShape(sphere, {0, 0, 1.5}, glm::vec3{0.5});
     scene.addShape(plane, {0, -0.5, 0});
 
     // Camera
-    Camera camera{film, {1, 0, 0}, {-1, 0, 0}, 90};
+    Camera camera{film, {1.6, 0, 0}, {0, 0, 0}, 90};
     // Renderer
     ProgressBar progress_bar("Rendering");
     std::atomic<int> rendering_count = 0;
@@ -64,11 +64,12 @@ void test_scene() {
         auto viewDir = -eyeRay.getDirection();
         auto halfVector = glm::normalize(lightDir + viewDir);
         float dist = glm::distance(light_source_pos, point);
+        float dist2 = dist * dist;
         // shading
         glm::vec3 color{};
         // specular term
         color += glm::vec3{0.5} * light_intensity *
-                 std::pow(std::max(0.0f, glm::dot(halfVector, normal)), 128.0f) / dist;
+                 std::pow(std::max(0.0f, glm::dot(halfVector, normal)), 128.0f) / dist2;
         // diffuse term
         glm::vec3 beta{1.0};
         color += material->sampleBSDF(-lightDir, viewDir, beta) * light_intensity * std::max(0.0f, glm::dot(lightDir, normal)) / dist;

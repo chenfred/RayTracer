@@ -5,7 +5,7 @@
 
 class Camera {
 public:
-    Camera(Film &_film, const glm::vec3 &_pos, const glm::vec3 &direction, float yAngleFOV);
+    Camera(Film &_film, const glm::vec3 &_pos, const glm::vec3 &_lookAtPoint, float yAngleFOV);
     ~Camera() = default;
 
     Ray generateEyeRay(const glm::ivec2 &pixel_coord, const glm::vec2 &in_pixel_offset = {0.5, 0.5}) const;

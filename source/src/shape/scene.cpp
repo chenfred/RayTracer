@@ -43,7 +43,8 @@ std::optional<HitInfo> Scene::intersect(const Ray &ray, float t_min, float t_max
     }
 
     auto hit_point = glm::vec3{closet_instance->model2worldMat * glm::vec4{closet_hit_modelspace->hitPoint, 1}};
-    auto hit_normal = glm::vec3{glm::transpose(closet_instance->world2modelMat) * glm::vec4{closet_hit_modelspace->hitNormal, 0}};
+    auto hit_normal = glm::normalize(
+        glm::vec3{glm::transpose(closet_instance->world2modelMat) * glm::vec4{closet_hit_modelspace->hitNormal, 0}});
     auto hit_material = closet_instance->material ? closet_instance->material : closet_hit_modelspace->hitMaterial;
 
     return HitInfo{closet_t, hit_point, hit_normal, hit_material};
