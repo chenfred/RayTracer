@@ -12,7 +12,23 @@ void Renderer::render(size_t spp, const std::filesystem::path &savePath) {
     auto &film = camera.getFilm();
     film.clear();
 
-    ProgressBar progress{"Rendering"};
+    Timer timer{std::format("Rendering {} SPPs.", spp)};
+    ProgressBar bar{"Multi-Sample Rendering"};
+    while (spp_cur < spp) {
+        threadPool.parallelFor(film.getWidth(), film.getHeight(), [&](size_t x, size_t y) -> void {
+            for (size_t i = 0; i < inc_spp; ++i) {
+                film.setPixel(x, y, renderPixel(x, y));
+            }
+        });
+        threadPool.wait();
+        bar.update(static_cast<double>(spp_cur) / spp);
+        film.save(savePath, &threadPool);
+
+        spp_cur += inc_spp;
+        inc_spp = std::min<size_t>(spp_cur, 32);
+    }
+    bar.done();
+    timer.conclude();
 }
 
 void Renderer::render(const std::filesystem::path &savePath) {
