@@ -48,5 +48,6 @@ private:
     std::vector<std::thread> threads;
     std::deque<Task *> tasks;
     SpinLock spinLock; // 添加 SpinLock 成员变量
-};
+};
+
 
