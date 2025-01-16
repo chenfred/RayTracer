@@ -47,5 +47,5 @@ void test_renderer() {
     Renderer &renderer{directShadingRenderer};
 
     // Go!
-    renderer.render(4, "./result.png");
+    renderer.render(32, "./result.png");
 }

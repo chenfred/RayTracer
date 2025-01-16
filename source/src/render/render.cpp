@@ -17,7 +17,7 @@ void Renderer::render(size_t spp, const std::filesystem::path &savePath) {
     while (spp_cur < spp) {
         threadPool.parallelFor(film.getWidth(), film.getHeight(), [&](size_t x, size_t y) -> void {
             for (size_t i = 0; i < inc_spp; ++i) {
-                film.setPixel(x, y, renderPixel(x, y));
+                film.addPixelSample(x, y, renderPixel(x, y));
             }
         });
         threadPool.wait();
@@ -42,7 +42,7 @@ void Renderer::render(const std::filesystem::path &savePath) {
     threadPool.parallelFor(film.getWidth(), film.getHeight(), [&](size_t x, size_t y) -> void {
         auto num_pixels_finished = ++rendering_count;
 
-        film.setPixel(x, y, renderPixel(x, y));
+        film.addPixelSample(x, y, renderPixel(x, y));
 
         if (num_pixels_finished % film.getWidth() == 0) {
             bar.update(static_cast<double>(num_pixels_finished) / num_pixels_total);
