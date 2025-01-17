@@ -19,14 +19,17 @@ public:
 
     // for debug
     void print() const { std::cout << std::format("Ray:[{},{},{}]->({},{},{})", origin.x, origin.y, origin.z, direction.x, direction.y, direction.z) << std::endl; }
-    bool operator==(const Ray &rhs) const { return vequal(origin, rhs.origin, 1e-3) && vequal(direction, rhs.direction, 1e-4); }
+    bool operator==(const Ray &rhs) const { return vequal(origin, rhs.origin) && vequal(direction, rhs.direction); }
 
 private:
     glm::vec3 origin, direction;
 };
 
+struct ShapeInstance;
+
 struct HitInfo {
     float t;
     glm::vec3 hitPoint, hitNormal;
     const Material *hitMaterial{};
+    const ShapeInstance *hitInstance{};
 };

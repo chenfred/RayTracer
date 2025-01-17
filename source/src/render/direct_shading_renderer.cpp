@@ -1,21 +1,32 @@
 #include "renderer/direct_shading_renderer.hpp"
 
+#include <glm/geometric.hpp>
+
 glm::vec3 DirectShadingRenderer::renderPixel(size_t x, size_t y) const {
     // casting ray
     auto eyeRay = camera.generateEyeRay({x, y}, {rng.uniform(), rng.uniform()});
-    auto hitInfo = scene.intersect(eyeRay);
-    if (!hitInfo) {
+    auto hit = scene.intersect(eyeRay);
+    if (!hit) {
         return {};
     }
-    const auto &point = hitInfo->hitPoint;
-    const auto &normal = hitInfo->hitNormal;
-    const auto *material = hitInfo->hitMaterial;
+    const auto &point = hit->hitPoint;
+    const auto &normal = hit->hitNormal;
+    const auto *material = hit->hitMaterial;
     const auto viewDir = -eyeRay.getDirection();
 
     // shading
     glm::vec3 radiance{};
     for (const auto &light : pointLights) {
         const auto lightDir = glm::normalize(light.position - point);
+
+        // TODO: 修一下阴影的问题
+        // // 检测光源是否被遮挡
+        // Ray visRay(point, lightDir);
+        // auto shadowedHit = scene.intersect(visRay);
+        // if (shadowedHit && shadowedHit->t < glm::distance(point, light.position)) {
+        //     return {};
+        // }
+
         const auto halfVector = glm::normalize(lightDir + viewDir);
         float dist = glm::distance(light.position, point);
         float dist2 = dist * dist;

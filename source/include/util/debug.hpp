@@ -1,8 +1,13 @@
 #pragma once
 
+#include "util/utils.hpp"
+
 #include <format>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <string_view>
+
+void debug_print(std::string_view msg);
 
 template <typename T, glm::qualifier Q>
 void print_mat(const glm::mat<4, 4, T, Q> &m) {
@@ -52,16 +57,8 @@ void print_vec(const glm::vec<L, T, Q> &v) {
     std::cout << "]" << std::endl;
 }
 
-template <typename T>
-concept FloatingPoint = std::is_floating_point_v<T>;
-
-template <FloatingPoint T>
-inline bool fequal(T left, T right, double EPS = 1e-5) {
-    return fabs(left - right) < EPS;
-}
-
 template <typename T, glm::qualifier Q, int L>
-bool vequal(const glm::vec<L, T, Q> &v1, const glm::vec<L, T, Q> &v2, double EPS) {
+bool vequal(const glm::vec<L, T, Q> &v1, const glm::vec<L, T, Q> &v2, double EPS = FLOAT_CMP_EPS) {
     for (auto i = 0; i < 3; ++i) {
         if (!fequal(v1[i], v2[i], EPS)) {
             return false;

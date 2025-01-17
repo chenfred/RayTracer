@@ -10,7 +10,7 @@
 class Bounds {
 public:
     Bounds() : posMin(std::numeric_limits<float>::infinity()), posMax(-std::numeric_limits<float>::infinity()) {}
-    Bounds(const glm::vec3 &_posMin, const glm::vec3 &_posMax) : posMin(_posMin), posMax(_posMax) {}
+    Bounds(const glm::vec3 &_posMin, const glm::vec3 &_posMax);
 
     bool hasIntersection(const Ray &ray, float t_min, float t_max) const;
     Bounds transformedBounds(const glm::mat4 transMat) const;

@@ -1,7 +1,17 @@
 #include "accelerate/bounds.hpp"
-#include "glm/common.hpp"
 
+#include <glm/glm.hpp>
 #include <stdexcept>
+
+Bounds::Bounds(const glm::vec3 &_posMin, const glm::vec3 &_posMax) : posMin(_posMin), posMax(_posMax) {
+    // TODO: 得防止Bounds降为二维，再找找别的地方有没有问题
+    auto delta = posMax - posMin;
+    for (size_t i = 0; i < 3; ++i) {
+        if (delta[i] < FLOAT_CMP_EPS) {
+            posMax[i] = posMin[i] + FLOAT_CMP_EPS;
+        }
+    }
+}
 
 // TODO: 有空再推一下
 bool Bounds::hasIntersection(const Ray &ray, float t_min, float t_max) const {
@@ -13,11 +23,11 @@ bool Bounds::hasIntersection(const Ray &ray, float t_min, float t_max) const {
     float near = std::max({tmin.x, tmin.t, tmin.z});
     float far = std::min({tmax.x, tmax.y, tmax.z});
 
-    if (near < t_min && far > t_max) {
+    if (near <= t_min && far >= t_max) {
         return false;
     }
 
-    return glm::min(far, t_max) > glm::max(near, t_min);
+    return glm::min(far, t_max) >= glm::max(near, t_min);
 }
 
 void Bounds::expand(const glm::vec3 &pos) {

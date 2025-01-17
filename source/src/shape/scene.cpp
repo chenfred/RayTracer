@@ -3,7 +3,6 @@
 #include "camera/ray.hpp"
 #include "glm/matrix.hpp"
 #include "shape/shape.hpp"
-#include "util/debug.hpp"
 
 #include <cassert>
 #include <glm/ext/matrix_transform.hpp>
@@ -19,18 +18,12 @@ std::optional<HitInfo> Scene::intersect(const Ray &ray, float t_min, float t_max
     float closet_t = t_max;
     for (const auto &instance : instances) {
         const auto bounds = instance.bounds;
+        // bounds->print();
         if (bounds && !bounds->hasIntersection(ray, t_min, closet_t)) {
             continue;
         }
 
         const auto ray_modelspace = ray.transformedRay(instance.world2modelMat);
-
-        // if (ray != ray_modelspace) {
-        //     ray.print();
-        //     ray_modelspace.print();
-        //     std::cout << "======================" << std::endl;
-        // }
-
         const auto hit_modelspace = instance.shape.intersect(ray_modelspace, t_min, closet_t);
         if (hit_modelspace) {
             closet_hit_modelspace = hit_modelspace;
@@ -47,7 +40,7 @@ std::optional<HitInfo> Scene::intersect(const Ray &ray, float t_min, float t_max
         glm::vec3{glm::transpose(closet_instance->world2modelMat) * glm::vec4{closet_hit_modelspace->hitNormal, 0}});
     auto hit_material = closet_instance->material ? closet_instance->material : closet_hit_modelspace->hitMaterial;
 
-    return HitInfo{closet_t, hit_point, hit_normal, hit_material};
+    return HitInfo{closet_t, hit_point, hit_normal, hit_material, closet_instance};
 }
 
 void Scene::addShape(const Shape &shape, const glm::vec3 &pos, const glm::vec3 &scale, const glm::vec3 &rotate, const Material *material) {

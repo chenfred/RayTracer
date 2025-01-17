@@ -3,6 +3,7 @@
 #include "camera/camera.hpp"
 #include "shape/scene.hpp"
 #include "thread/thread_pool.hpp"
+#include "util/rng.hpp"
 
 #define DEFINE_RENDERER(Name) \
     class Name##Renderer : public Renderer { \
@@ -22,6 +23,7 @@ protected:
     Camera &camera;
     const Scene &scene;
     ThreadPool threadPool{};
+    RNG rng{};
 
 private:
     virtual glm::vec3 renderPixel(size_t x, size_t y) const = 0;

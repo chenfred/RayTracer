@@ -7,7 +7,7 @@
 // TODO: 理一下addShape的逻辑
 class Scene : public Shape {
 public:
-    std::optional<HitInfo> intersect(const Ray &ray, float t_min = 1e-5, float t_max = std::numeric_limits<float>::infinity()) const override;
+    std::optional<HitInfo> intersect(const Ray &ray, float t_min = 0, float t_max = std::numeric_limits<float>::infinity()) const override;
 
     void addShape(const Shape &shape,
                   const glm::vec3 &pos = {0, 0, 0},
