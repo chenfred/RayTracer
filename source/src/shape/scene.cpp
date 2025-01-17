@@ -9,16 +9,11 @@
 #include <optional>
 
 std::optional<HitInfo> Scene::intersect(const Ray &ray, float t_min, float t_max) const {
-    if (instances.empty()) {
-        return std::nullopt;
-    }
-
     std::optional<HitInfo> closet_hit_modelspace;
     const ShapeInstance *closet_instance;
     float closet_t = t_max;
     for (const auto &instance : instances) {
         const auto bounds = instance.bounds;
-        // bounds->print();
         if (bounds && !bounds->hasIntersection(ray, t_min, closet_t)) {
             continue;
         }

@@ -1,10 +1,7 @@
 #pragma once
 
 #include "renderer.hpp"
-
-struct PointLight {
-    glm::vec3 position, intensity;
-};
+#include "light.hpp"
 
 class DirectShadingRenderer : public Renderer {
 public:

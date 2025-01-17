@@ -4,7 +4,6 @@
 #include <stdexcept>
 
 Bounds::Bounds(const glm::vec3 &_posMin, const glm::vec3 &_posMax) : posMin(_posMin), posMax(_posMax) {
-    // TODO: 得防止Bounds降为二维，再找找别的地方有没有问题
     auto delta = posMax - posMin;
     for (size_t i = 0; i < 3; ++i) {
         if (delta[i] < FLOAT_CMP_EPS) {

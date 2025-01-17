@@ -6,7 +6,7 @@ class Plane : public Shape {
 public:
     Plane(const glm::vec3 &_point, const glm::vec3 &_normal, Material *_material) : point(_point), normal(_normal), material(_material) {}
 
-    std::optional<HitInfo> intersect(const Ray &ray, float t_min = 0, float t_max = std::numeric_limits<float>::infinity()) const override;
+    std::optional<HitInfo> intersect(const Ray &ray, float t_min = FLOAT_CMP_EPS, float t_max = std::numeric_limits<float>::infinity()) const override;
 
     void setMaterial(const Material *m) { material = m; }
 

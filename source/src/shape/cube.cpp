@@ -1,6 +1,6 @@
 #include "shape/cube.hpp"
 #include "shape/triangle.hpp"
-#include "util/debug.hpp"
+
 #include <cassert>
 
 Cube::Cube(float edge, const Material *m) : material{m} {
@@ -43,13 +43,13 @@ Cube::Cube(float edge, const Material *m) : material{m} {
 }
 
 std::optional<HitInfo> Cube::intersect(const Ray &ray, float t_min, float t_max) const {
-    if (!bounds.hasIntersection(ray, t_min, t_max)) {
-        return {};
-    }
-
     std::optional<HitInfo> closet_hit;
     float closet_t = t_max;
     for (const auto &triangle : triangles) {
+        if(!triangle.getBounds()->hasIntersection(ray, t_min, closet_t)){
+            continue;
+        }
+
         auto hitInfo = triangle.intersect(ray, t_min, closet_t);
         if (hitInfo) {
             closet_hit = hitInfo;

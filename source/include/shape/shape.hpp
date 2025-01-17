@@ -12,7 +12,7 @@ public:
     Shape() = default;
     virtual ~Shape() = default;
 
-    virtual std::optional<HitInfo> intersect(const Ray &ray, float t_min = 0, float t_max = std::numeric_limits<float>::infinity()) const = 0;
+    virtual std::optional<HitInfo> intersect(const Ray &ray, float t_min = FLOAT_CMP_EPS, float t_max = std::numeric_limits<float>::infinity()) const = 0;
     virtual std::optional<Bounds> getBounds() const { return std::nullopt; }
 };
 

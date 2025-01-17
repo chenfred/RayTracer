@@ -1,4 +1,5 @@
 #include "renderer/direct_shading_renderer.hpp"
+#include "util/global.hpp"
 
 #include <glm/geometric.hpp>
 
@@ -17,15 +18,15 @@ glm::vec3 DirectShadingRenderer::renderPixel(size_t x, size_t y) const {
     // shading
     glm::vec3 radiance{};
     for (const auto &light : pointLights) {
-        const auto lightDir = glm::normalize(light.position - point);
+        const auto lightVec = light.position - point;
+        const auto lightDir = glm::normalize(lightVec);
 
         // TODO: 修一下阴影的问题
-        // // 检测光源是否被遮挡
-        // Ray visRay(point, lightDir);
-        // auto shadowedHit = scene.intersect(visRay);
-        // if (shadowedHit && shadowedHit->t < glm::distance(point, light.position)) {
-        //     return {};
-        // }
+        float t_max = glm::length(lightVec);
+        auto shadowedHit = scene.intersect(Ray{point, lightDir}, FLOAT_CMP_EPS, t_max);
+        if (shadowedHit) {
+            continue;
+        }
 
         const auto halfVector = glm::normalize(lightDir + viewDir);
         float dist = glm::distance(light.position, point);
