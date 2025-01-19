@@ -25,14 +25,12 @@ glm::vec3 DirectShadingRenderer::renderPixel(size_t x, size_t y) const {
         glm::vec3 beta{1.0};
         glm::vec3 albedo_pi = material->sampleBSDF(-lightDir, viewDir, beta) * light.intensity;
         // ambient term
-        radiance += albedo_pi * 0.01f * light.intensity; 
+        radiance += albedo_pi * 0.01f * light.intensity;
 
-        if (glm::dot(lightDir, normal) < 0) { // FIXME: 理论上不需要这个判断
+        if (glm::dot(lightDir, normal) < 0) {
             continue;
         }
-
-        float t_max = glm::length(lightVec);
-        auto shadowedHit = scene.intersect(Ray{point, lightDir}, FLOAT_CMP_EPS, t_max);
+        auto shadowedHit = scene.intersect(Ray{point, lightDir}, FLOAT_CMP_EPS, glm::length(lightVec));
         if (shadowedHit) {
             continue;
         }

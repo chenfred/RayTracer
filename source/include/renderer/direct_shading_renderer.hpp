@@ -9,7 +9,7 @@ public:
         : DirectShadingRenderer(_cam, _scene, concurrency, {_light_pos, _light_int}) {}
     DirectShadingRenderer(Camera &_cam, const Scene &_scene, size_t concurrency,const PointLight &_light)
         : DirectShadingRenderer(_cam, _scene, concurrency, std::vector<PointLight>{_light}) {}
-    DirectShadingRenderer(Camera &_cam, const Scene &_scene, size_t concurrency, const std::vector<PointLight> _lights)
+    DirectShadingRenderer(Camera &_cam, const Scene &_scene, size_t concurrency, const std::vector<PointLight> &_lights)
         : Renderer(_cam, _scene, concurrency), pointLights{_lights} {}
 
 private:

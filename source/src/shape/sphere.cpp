@@ -20,7 +20,6 @@ std::optional<HitInfo> Sphere::intersect(const Ray &ray, float t_min, float t_ma
         return std::nullopt;
     }
 
-    // FIXME: 修复导致Sphere背光处也能算出visibility不为0的问题
     // 计算交点参数t
     float sqrtD = std::sqrt(discriminant);
     float t1 = (-b - sqrtD) / (2.0f * a);

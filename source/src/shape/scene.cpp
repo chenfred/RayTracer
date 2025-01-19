@@ -4,39 +4,80 @@
 #include "shape/shape.hpp"
 
 #include <cassert>
+#include <cmath>
 #include <glm/ext/matrix_transform.hpp>
 #include <optional>
 
 std::optional<HitInfo> Scene::intersect(const Ray &ray, float t_min, float t_max) const {
-    std::optional<HitInfo> closestHit_modelspace;
-    const ShapeInstance *closest_instance;
     float closestHitTime = t_max;
-    for (const auto &instance : instances) {
-        const auto bounds = instance.bounds;
+    const ShapeInstance *closest_instance;
+    glm::vec3 closestHitPoint;
+    std::optional<HitInfo> closestHit_modelspace;
+    for (auto &instance : instances) {
+        auto bounds = instance.bounds;
         if (bounds && !bounds->hasIntersection(ray, t_min, closestHitTime)) {
             continue;
         }
 
-        // 为了保持相交time在model空间和在world空间的一致可比较，这里的transformedRay不能对dir进行归一化：ray在transMat的作用下有可能被拉长或压缩
-        const auto ray_modelspace = ray.transformedRay(instance.world2modelMat);
-        const auto hit_modelspace = instance.shape.intersect(ray_modelspace, t_min, closestHitTime);
-        if (hit_modelspace) {
-            closestHitTime = hit_modelspace->t;
-            closestHit_modelspace = hit_modelspace;
+        auto ray_modelspace = ray.transformedRay(instance.world2modelMat);
+        // 需要将相交time先从worldspace转到modelspace
+        auto closestHitTime_modelspace = std::isinf(closestHitTime) ? closestHitTime
+                                                                    : ray_modelspace.hitAtTime(ray.hitAtPoint(closestHitTime)); 
+        auto hit_modelspace = instance.shape.intersect(ray_modelspace, t_min, closestHitTime);
+        if (!hit_modelspace) {
+            continue;
+        }
+
+        // 再将相交time从modelspace转回worldspace
+        auto hitPoint = glm::vec3{instance.model2worldMat * glm::vec4{hit_modelspace->hitPoint, 1}};
+        auto hitTime = ray.hitAtTime(hitPoint);
+        if (hitTime < closestHitTime) {
+            closestHitTime = hitTime;
             closest_instance = &instance;
+            closestHitPoint = hitPoint;
+            closestHit_modelspace = hit_modelspace;
         }
     }
     if (!closestHit_modelspace) {
         return {};
     }
 
-    const auto closestHitInfo_modelspace = closestHit_modelspace.value();
-    auto hitPoint = glm::vec3(closest_instance->model2worldMat * glm::vec4{closestHitInfo_modelspace.hitPoint, 1});
-    auto hitNormal = glm::normalize(glm::vec3{
-        glm::transpose(closest_instance->world2modelMat) * glm::vec4{closestHitInfo_modelspace.hitNormal, 0}});
-    auto hitMaterial = closest_instance->material ? closest_instance->material : closestHitInfo_modelspace.hitMaterial;
-    return HitInfo{closestHitTime, hitPoint, hitNormal, hitMaterial, closest_instance};
+    auto normal = glm::normalize(glm::vec3{
+        glm::transpose(closest_instance->world2modelMat) * glm::vec4{closestHit_modelspace->hitNormal, 0}});
+    const Material *material = closest_instance->material ? closest_instance->material : closestHit_modelspace->hitMaterial;
+    return HitInfo{closestHitTime, closestHitPoint, normal, material, closest_instance};
 }
+
+// std::optional<HitInfo> Scene::intersectConvRayDir(const Ray &ray, float t_min, float t_max) const {
+//     std::optional<HitInfo> closestHit_modelspace;
+//     const ShapeInstance *closest_instance;
+//     float closestHitTime = t_max;
+//     for (const auto &instance : instances) {
+//         const auto bounds = instance.bounds;
+//         if (bounds && !bounds->hasIntersection(ray, t_min, closestHitTime)) {
+//             continue;
+//         }
+
+//         // 为了保持相交time在model空间和在world空间的一致可比较，这里的transformedRay不能对dir进行归一化：ray在transMat的作用下有可能被拉长或压缩
+//         const auto ray_modelspace = ray.transformedRay(instance.world2modelMat);
+//         const auto hit_modelspace = instance.shape.intersect(ray_modelspace, t_min, closestHitTime);
+//         if (hit_modelspace) {
+//             closestHitTime = hit_modelspace->t;
+//             closestHit_modelspace = hit_modelspace;
+//             closest_instance = &instance;
+//         }
+//     }
+//     if (!closestHit_modelspace) {
+//         return {};
+//     }
+
+//     const auto closestHitInfo_modelspace = closestHit_modelspace.value();
+//     auto hitPoint = glm::vec3(closest_instance->model2worldMat * glm::vec4{closestHitInfo_modelspace.hitPoint, 1});
+//     auto hitNormal = glm::normalize(glm::vec3{
+//         glm::transpose(closest_instance->world2modelMat) * glm::vec4{closestHitInfo_modelspace.hitNormal, 0}});
+//     auto hitMaterial = closest_instance->material ? closest_instance->material : closestHitInfo_modelspace.hitMaterial;
+//     return HitInfo{closestHitTime, hitPoint, hitNormal, hitMaterial, closest_instance};
+// }
 
 void Scene::addShape(const Shape &shape, const glm::vec3 &pos, const glm::vec3 &scale, const glm::vec3 &rotate, const Material *material) {
     glm::mat4 model2worldMat =
