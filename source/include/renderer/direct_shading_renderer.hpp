@@ -5,12 +5,12 @@
 
 class DirectShadingRenderer : public Renderer {
 public:
-    DirectShadingRenderer(Camera &_cam, const Scene &_scene, const glm::vec3 &_light_pos, const glm::vec3 &_light_int)
-        : DirectShadingRenderer(_cam, _scene, {_light_pos, _light_int}) {}
-    DirectShadingRenderer(Camera &_cam, const Scene &_scene, const PointLight &_light)
-        : DirectShadingRenderer(_cam, _scene, std::vector<PointLight>{_light}) {}
-    DirectShadingRenderer(Camera &_cam, const Scene &_scene, const std::vector<PointLight> _lights)
-        : Renderer(_cam, _scene), pointLights{_lights} {}
+    DirectShadingRenderer(Camera &_cam, const Scene &_scene, size_t concurrency,const glm::vec3 &_light_pos, const glm::vec3 &_light_int)
+        : DirectShadingRenderer(_cam, _scene, concurrency, {_light_pos, _light_int}) {}
+    DirectShadingRenderer(Camera &_cam, const Scene &_scene, size_t concurrency,const PointLight &_light)
+        : DirectShadingRenderer(_cam, _scene, concurrency, std::vector<PointLight>{_light}) {}
+    DirectShadingRenderer(Camera &_cam, const Scene &_scene, size_t concurrency, const std::vector<PointLight> _lights)
+        : Renderer(_cam, _scene, concurrency), pointLights{_lights} {}
 
 private:
     std::vector<PointLight> pointLights;

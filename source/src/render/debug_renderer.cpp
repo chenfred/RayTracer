@@ -1,5 +1,4 @@
 #include "renderer/debug_renderer.hpp"
-#include "glm/ext/quaternion_geometric.hpp"
 #include "util/global.hpp"
 
 glm::vec3 DebugInstanceRenderer::renderPixel(size_t x, size_t y) const {
@@ -68,6 +67,9 @@ glm::vec3 DebugVisibilityRenderer::renderPixel(size_t x, size_t y) const {
     const auto &normal = hit->hitNormal;
     const auto lightVec = light.position - point;
     const auto lightDir = glm::normalize(lightVec);
+    if (glm::dot(lightDir, normal) < 0) { // FIXME: 理论上不需要这个判断
+        return {};
+    }
 
     float t_max = glm::length(lightVec);
     auto secondaryHit = scene.intersect(Ray{point, lightDir}, FLOAT_CMP_EPS, t_max);

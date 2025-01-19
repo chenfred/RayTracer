@@ -13,9 +13,9 @@ void ParallelForTask::run() {
 }
 
 ThreadPool::ThreadPool(size_t thread_count) : alive{true}, numPendingTasks{0} {
-    if (thread_count == 0) {
-        thread_count = std::thread::hardware_concurrency();
-    }
+    // if (thread_count == 0) {
+    //     thread_count = std::thread::hardware_concurrency();
+    // }
     for (size_t i = 0; i < thread_count; ++i) {
         threads.emplace_back(std::thread(ThreadPool::WorkerThread, i, this));
     }
@@ -30,24 +30,37 @@ ThreadPool::~ThreadPool() {
     threads.clear();
 }
 
-void ThreadPool::parallelFor(size_t width, size_t height, const std::function<void(size_t, size_t)> &lambda) {
+void ThreadPool::parallelFor(size_t width, size_t height, const std::function<void(size_t, size_t)> &f) {
+    if (threads.empty()) {
+        serialFor(width, height, f);
+        return;
+    }
+
     double divider = std::sqrt(threads.size()); // 把width*height切分成小块的chunk_width*chunk*height，均匀地分配给池子里的线程
-    divider *= 2; // TODO: 增加任务数，让线程池的线程更容易分配到任务（任务数比线程数要多），理论上对于空旷的场景效率高点
+    divider *= 2;   // TEST: 增加任务数，让线程池的线程更容易分配到任务（任务数比线程数要多），理论上对于空旷的场景效率高点
     size_t chunk_width = std::ceil(static_cast<double>(width) / divider);
     size_t chunk_height = std::ceil(static_cast<double>(height) / divider);
     assert(chunk_width > 0 && chunk_height > 0);
 
-    for (auto x = 0; x < width; x += chunk_width) {
+    for (size_t x = 0; x < width; x += chunk_width) {
         // 最后一块可能比较小
-        auto cur_chunk_width = std::min(chunk_width, width - x);
+        size_t cur_chunk_width = std::min(chunk_width, width - x);
         if (cur_chunk_width <= 0)
             break;
-        for (auto y = 0; y < height; y += chunk_height) {
-            auto cur_chunk_height = std::min(chunk_height, height - y);
+        for (size_t y = 0; y < height; y += chunk_height) {
+            size_t cur_chunk_height = std::min(chunk_height, height - y);
             if (cur_chunk_height <= 0)
                 break;
 
-            addTask(new ParallelForTask(x, y, cur_chunk_width, cur_chunk_height, lambda));
+            addTask(new ParallelForTask(x, y, cur_chunk_width, cur_chunk_height, f));
+        }
+    }
+}
+
+void ThreadPool::serialFor(size_t width, size_t height, const std::function<void(size_t, size_t)> &f) {
+    for (size_t x = 0; x < width; ++x) {
+        for (size_t y = 0; y < height; ++y) {
+            f(x, y);
         }
     }
 }

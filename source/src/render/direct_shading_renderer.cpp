@@ -21,7 +21,16 @@ glm::vec3 DirectShadingRenderer::renderPixel(size_t x, size_t y) const {
         const auto lightVec = light.position - point;
         const auto lightDir = glm::normalize(lightVec);
 
-        // TODO: 修一下阴影的问题
+        // For Debug Only
+        glm::vec3 beta{1.0};
+        glm::vec3 albedo_pi = material->sampleBSDF(-lightDir, viewDir, beta) * light.intensity;
+        // ambient term
+        radiance += albedo_pi * 0.01f * light.intensity; 
+
+        if (glm::dot(lightDir, normal) < 0) { // FIXME: 理论上不需要这个判断
+            continue;
+        }
+
         float t_max = glm::length(lightVec);
         auto shadowedHit = scene.intersect(Ray{point, lightDir}, FLOAT_CMP_EPS, t_max);
         if (shadowedHit) {
@@ -36,10 +45,9 @@ glm::vec3 DirectShadingRenderer::renderPixel(size_t x, size_t y) const {
         radiance += glm::vec3{0.5} * light.intensity *
                     std::pow(std::max(0.0f, glm::dot(halfVector, normal)), 128.0f) / dist2;
         // diffuse term
-        glm::vec3 beta{1.0};
-        radiance += material->sampleBSDF(-lightDir, viewDir, beta) * light.intensity * std::max(0.0f, glm::dot(lightDir, normal)) / dist;
+        radiance += albedo_pi * light.intensity * std::max(0.0f, glm::dot(lightDir, normal)) / dist;
         // ambient term
-        radiance += glm::vec3{0.01} * light.intensity;
+        // radiance += 0.01f * light.intensity;
     }
 
     return radiance;

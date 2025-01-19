@@ -30,11 +30,13 @@ private:
 
 class ThreadPool {
 public:
-    ThreadPool(size_t thread_count = 0);
+    ThreadPool() = delete;
+    ThreadPool(size_t thread_count = std::thread::hardware_concurrency());
     ~ThreadPool();
 
-    // 为[0, width)*[0, height)的(x, y)并行执行lambda(x, y)
-    void parallelFor(size_t width, size_t height, const std::function<void(size_t, size_t)> &lambda);
+    // 为[0, width)*[0, height)的(x, y)并行执行f(x, y)
+    void parallelFor(size_t width, size_t height, const std::function<void(size_t, size_t)> &f);
+    void serialFor(size_t width, size_t height, const std::function<void(size_t, size_t)> &f);
     void wait() const;
 
     void addTask(Task *task);
@@ -49,5 +51,3 @@ private:
     std::deque<Task *> tasks;
     SpinLock spinLock; // 添加 SpinLock 成员变量
 };
-
-

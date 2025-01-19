@@ -9,63 +9,76 @@
 #include "shape/model.hpp"
 #include "shape/plane.hpp"
 #include "shape/scene.hpp"
-#include "shape/shape.hpp"
 #include "shape/sphere.hpp"
-#include "shape/triangle.hpp"
+#include "util/global.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-void test_renderer();
-
 static const size_t WIDTH = 400;
-static const size_t HEIGHT = 300;
+static const size_t HEIGHT = 200;
 
-// TODO: 修一下一个球会被平面/像平面的长方体变得很奇怪的问题
+void test_renderer();
 int main() {
+    // APP_CONCURRENCY = 0;
     test_renderer();
     return 0;
 }
 void test_renderer() {
-    Film film{WIDTH, HEIGHT};
-    glm::vec3 light_pos{0, 2, 2};
-    glm::vec3 light_intensity{5};
+    // Point Light
+    glm::vec3 light_pos{0, 1, 0.25};
+    glm::vec3 light_intensity{3};
 
-    // shapes
-    Sphere lightSphere{0.1, {0, 0, 0}, new DiffuseMaterial(glm::vec3{1.0}, glm::vec3{0.5})};
-    Sphere sphere{1, {0, 0, 0}, new DiffuseMaterial(glm::vec3{0.3, 0.3, 0.7})};
-    Cube cube{1, new DiffuseMaterial(glm::vec3{0.5})};
-    Plane plane{{0, 0, 0}, {0, 1, 0}, new DiffuseMaterial({glm::vec3{0.1}})};
-    Model model{"resources/models/simple_dragon.obj", new DiffuseMaterial(glm::vec3{0.3})};
-    // Model model{"resources/models/dragon_87k.obj", new DiffuseMaterial(glm::vec3{0.3})};
+    // Material
+    auto *grey_light = new DiffuseMaterial(glm::vec3{0.3});
+    auto *grey = new DiffuseMaterial(glm::vec3{0.5});
+    auto *blue = new DiffuseMaterial({0.3, 0.3, 0.7});
+    auto *pink = new DiffuseMaterial({0.5, 0.1, 0.1});
+    auto *emit = new DiffuseMaterial({0.3, 0.3, 0.7}, glm::vec3{0.1});
 
     // Scene
     Scene scene;
-    // scene.addShape(lightSphere, {0, 0.5, 0});
-    scene.addShape(model, {0.75, 0, 0}, glm::vec3{1}, {0, -90, 0});
-    scene.addShape(sphere, {-0.5, 0, 0.25}, glm::vec3{0.25});
-    scene.addShape(cube, {0, -0.5, 0}, glm::vec3{16, 0.5, 16}, glm::vec3{0}); // 用作Plane的Cube
-    // scene.addShape(plane, {0, -0.001, 0});
+
+    // shapes
+    Model model{"resources/models/simple_dragon.obj", grey};
+    // Model model{"resources/models/dragon_87k.obj", pink};
+    Sphere sphere{1, {0, 0, 0}, grey};
+    Cube cube{1, {0, 0, 0}, grey};
+    Plane plane{{0, 0, 0}, {0, 1, 0}, grey_light};
+    scene.addShape(model, {0.5, 0, 0}, {1, 1, 1}, {0, -90, 0});
+    scene.addShape(sphere, {-0.5, 0, 0}, glm::vec3{0.25});
+    // scene.addShape(cube, {0.5, 0, 0}, glm::vec3{0.5});
+    scene.addShape(plane, {0, -0.25, 0});
+    // scene.addShape(cube, {0, -0.5 - 0.25, 0}, {16, 1, 16}); //cube plane
+
+    // Sphere c_sphere{0.25, {-0.5, 0, 0}, blue};
+    // Cube c_cube{0.5, {0.5, 0, 0}, grey};
+    // Plane c_plane{{0, -0.25, 0}, {0, 1, 0}, grey_light};
+    // Cube c_cubePlane{16, {0, -8 - 0.25, 0}, pink};
+    // scene.addShape(c_sphere);
+    // scene.addShape(c_cube);
+    // // scene.addShape(c_plane);
+    // scene.addShape(c_cubePlane);
 
     // Camera
-    Camera camera(film, {0, 0, 1}, {0, 0, 0}, 90);
-
-    // Renderer
-    DirectShadingRenderer directShadingRenderer(camera, scene, light_pos, light_intensity);
-    SimpleRayTracingRenderer simpleRTRenderer(camera, scene);
-
-    DebugInstanceRenderer instRen(camera, scene);
-    DebugNormalRenderer normalRen(camera, scene);
-    DebugDepthRenderer depthRen(camera, scene);
-    DebugVisibilityRenderer visRen(camera, scene, light_pos, light_intensity);
+    Film film{WIDTH, HEIGHT};
+    Camera camera(film, {0, 0, 1.5}, {0, 0, 0}, 90);
 
     // Go!
-    Renderer &renderer{directShadingRenderer};
-    renderer.render(1, "./results/scene.png");
+    // DirectShadingRenderer(camera, scene, APP_CONCURRENCY, light_pos, light_intensity)
+    //     .render(1, "./results/scene.png");
 
-    // Debug Go!
-    instRen.render("./results/instances.png");
-    normalRen.render("./results/normal.png");
-    depthRen.render("./results/depth.png");
-    visRen.render("./results/visibility.png");
+    scene.addShape(sphere, {-0.75, 0.5, 1.0}, glm::vec3{0.1}, glm::vec3{0}, emit); // 发光小球
+    SimpleRayTracingRenderer(camera, scene, APP_CONCURRENCY)
+        .render(32, "./results/rt-scene.png");
+
+    // // Debug Go!
+    // DebugInstanceRenderer(camera, scene, APP_CONCURRENCY)
+    //     .render("./results/instance.png");
+    // DebugNormalRenderer(camera, scene, APP_CONCURRENCY)
+    //     .render("./results/normal.png");
+    // DebugDepthRenderer(camera, scene, APP_CONCURRENCY)
+    //     .render("./results/depth.png");
+    // DebugVisibilityRenderer(camera, scene, APP_CONCURRENCY, light_pos, light_intensity)
+    //     .render("./results/visibility.png");
 }

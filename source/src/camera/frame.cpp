@@ -1,9 +1,6 @@
 #include "camera/frame.hpp"
-#include "glm/common.hpp"
-#include "glm/geometric.hpp"
 
 // TODO: 推一下这个坐标空间的变换
-
 LocalFrame::LocalFrame(const glm::vec3 &normal) {
     ys = normal;
     glm::vec3 up = glm::abs(normal.y) < 0.99999 ? glm::vec3(0, 1, 0) : glm::vec3(0, 0, 1);
