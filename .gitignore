@@ -5,6 +5,7 @@
 build/
 install/
 resources/
+results/
 
 # files to ignore
 *.jpg

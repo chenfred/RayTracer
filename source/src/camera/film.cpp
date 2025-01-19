@@ -1,6 +1,5 @@
 #include "camera/film.hpp"
 #include "camera/rgb.hpp"
-#include "glm/exponential.hpp"
 #include "thread/thread_pool.hpp"
 
 #include <cstddef>
@@ -32,7 +31,7 @@ void Film::saveToPPM(const std::filesystem::path &path) const {
 
     for (size_t y = 0; y < height; ++y) {
         for (size_t x = 0; x < width; ++x) {
-            RGB rgb{getPixel(x, y)};
+            RGB rgb{getPixelRadiance(x, y)};
             for (const auto channel : rgb.rgb()) {
                 file << channel;
             }
@@ -51,7 +50,7 @@ void Film::saveToPNG(const std::filesystem::path &path, ThreadPool *threadPool) 
     auto f_loadingPixelData = [&](size_t y, size_t x) -> void {
         size_t index = (y * width + x) * 4;
 
-        RGB color{getPixel(x, y)};
+        RGB color{getPixelRadiance(x, y)};
         for (const auto channel : color.rgb()) {
             pixelData[index] = channel;
             index++;
@@ -76,4 +75,20 @@ void Film::saveToPNG(const std::filesystem::path &path, ThreadPool *threadPool) 
     if (result == 0) {
         throw std::runtime_error("Failed to save PNG file.");
     }
+}
+
+glm::vec3 Film::getPixelRadiance(size_t x, size_t y) const {
+    auto index = y * width + x;
+    return pixels[index].radiance / static_cast<float>(pixels[index].numSamples);
+}
+
+void Film::addPixelSample(size_t x, size_t y, const glm::vec3 &radiance) {
+    auto index = y * width + x;
+    pixels[index].radiance += radiance;
+    pixels[index].numSamples++;
+}
+
+void Film::clear() {
+    pixels.clear();
+    pixels.resize(width * height);
 }

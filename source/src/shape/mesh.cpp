@@ -13,16 +13,15 @@ std::optional<HitInfo> Mesh::intersect(const Ray &ray, float t_min, float t_max)
     return intersectBrutally(ray, t_min, t_max);
 }
 
-// 暴力遍历求交法
-// TODO: 之后会实现一个BVH求交
+// 暴力遍历求交法，之后会实现一个BVH求交
 std::optional<HitInfo> Mesh::intersectBrutally(const Ray &ray, float t_min, float t_max) const {
-    if (triangles.empty() || !bounds.hasIntersection(ray, t_min, t_max)) {
-        return std::nullopt;
-    }
-
     std::optional<HitInfo> closest_hit;
     float closet_t = t_max;
     for (const auto &triangle : triangles) {
+        if(!triangle.getBounds()->hasIntersection(ray, t_min, closet_t)){
+            continue;
+        }
+
         auto hit = triangle.intersect(ray, t_min, closet_t);
         if (hit) {
             closest_hit = hit;
@@ -31,7 +30,7 @@ std::optional<HitInfo> Mesh::intersectBrutally(const Ray &ray, float t_min, floa
     }
 
     if (!closest_hit) {
-        return std::nullopt;
+        return {};
     }
     return HitInfo{closest_hit->t, closest_hit->hitPoint, closest_hit->hitNormal, material};
 }

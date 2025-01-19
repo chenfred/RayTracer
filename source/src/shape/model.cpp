@@ -11,13 +11,12 @@ Model::Model(const std::vector<Mesh> &_meshes) : meshes{_meshes} {
 }
 
 std::optional<HitInfo> Model::intersect(const Ray &ray, float t_min, float t_max) const {
-    if (meshes.empty() || !bounds.hasIntersection(ray, t_min, t_max)) {
-        return std::nullopt;
-    }
-
     std::optional<HitInfo> closest_hit;
     float closet_t = t_max;
     for (const auto &mesh : meshes) {
+        if(!mesh.getBounds()->hasIntersection(ray, t_min, closet_t)){
+            continue;
+        }
         auto hit = mesh.intersect(ray, t_min, closet_t);
         if (hit) {
             closest_hit = hit;
