@@ -2,8 +2,8 @@
 
 #include <glm/glm.hpp> 
 
-extern const float M_PI;
-extern const float FLOAT_CMP_EPS;
+constexpr float M_PI = 3.1415926f;
+constexpr float FLOAT_CMP_EPS = 1e-5;
 
 extern size_t INSTANCE_INDEX;
 extern size_t APP_CONCURRENCY;

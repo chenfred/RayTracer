@@ -5,7 +5,7 @@
 
 // 定义正方体的6个面，每个面由2个三角形组成
 // 每个三角形的顶点按逆时针顺序排列，以确保法线朝外
-static const std::array<std::array<int, 3>, 12> faceTriangles = {{
+static constexpr std::array<std::array<int, 3>, 12> faceTriangles = {{
     {{0, 3, 2}},
     {{0, 2, 1}}, // -Z face
     {{4, 5, 6}},

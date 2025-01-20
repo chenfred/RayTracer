@@ -27,5 +27,7 @@ public:
 
 private:
     glm::vec3 posMin, posMax;
-    // static inline const float BOUNDS_EDGE_EXPAND = FLOAT_CMP_EPS;
+    
+    // 用于防止bounds降维
+    static constexpr float BOUNDS_EDGE_EXPANDSION = FLOAT_CMP_EPS;
 };

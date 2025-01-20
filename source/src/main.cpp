@@ -46,15 +46,15 @@ void test_renderer() {
     Scene scene;
 
     // shapes
-    Model nanosuit{"resources/models/nanosuit/nanosuit.obj", grey};
+    // Model nanosuit{"resources/models/nanosuit/nanosuit.obj", grey};
     // Model model{"resources/models/dragon/simple_dragon.obj", pink};
-    // Model dragon{"resources/models/dragon/dragon_87k.obj", pink};
+    Model dragon{"resources/models/dragon/dragon_87k.obj", pink};
     // Model model{"resources/models/dragon_871k.obj", pink};
     Sphere sphere{1, {0, 0, 0}, blue};
     Cube cube{1, {0, 0, 0}, blue};
     Plane plane{{0, 0, 0}, {0, 1, 0}, grey_light};
-    // scene.addShape(dragon, {0.5, 0, 0}, {1, 1, 1}, {0, -90, 0});
-    scene.addShape(nanosuit, {0.5, -0.25, 0}, glm::vec3{0.05});
+    scene.addShape(dragon, {0.5, 0, 0}, {1, 1, 1}, {0, -90, 0});
+    // scene.addShape(nanosuit, {0.5, -0.25, 0}, glm::vec3{0.05});
     scene.addShape(sphere, {-0.5, 0, 0}, glm::vec3{0.25});
     // scene.addShape(cube, {-0.5, 0, 0}, glm::vec3{0.25},{30,-45,45});
     scene.addShape(plane, {0, -0.25, 0});
@@ -66,7 +66,7 @@ void test_renderer() {
 
     // Go!
     DirectShadingRenderer(camera, scene, APP_CONCURRENCY, plights)
-        .render(32, "./results/scene.png");
+        .render(1, "./results/scene.png");
 
     // scene.addShape(sphere, {-0.75, 0.5, 1.0}, glm::vec3{0.1}, glm::vec3{0}, emit); // 发光小球
     // SimpleRayTracingRenderer(camera, scene, APP_CONCURRENCY)
