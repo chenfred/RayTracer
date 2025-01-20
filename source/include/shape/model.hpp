@@ -1,8 +1,6 @@
 #pragma once
 
-#include "accelerate/bounds.hpp"
 #include "shape/mesh.hpp"
-#include "shape/shape.hpp"
 
 #include <filesystem>
 #include <vector>

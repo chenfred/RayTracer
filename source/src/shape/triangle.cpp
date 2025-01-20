@@ -33,10 +33,6 @@ Triangle::Triangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2
 }
 
 std::optional<HitInfo> Triangle::intersect(const Ray &ray, float t_min, float t_max) const {
-    if (!bounds.hasIntersection(ray, t_min, t_max)) {
-        return std::nullopt;
-    }
-
     // Möller–Trumbore intersection algorithm
     const glm::vec3 &v0 = points[0];
     const glm::vec3 &v1 = points[1];

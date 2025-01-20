@@ -46,8 +46,8 @@ void test_renderer() {
     Scene scene;
 
     // shapes
-    Model model{"resources/models/simple_dragon.obj", pink};
-    // Model model{"resources/models/dragon_87k.obj", pink};
+    // Model model{"resources/models/simple_dragon.obj", pink};
+    Model model{"resources/models/dragon_87k.obj", pink};
     Sphere sphere{1, {0, 0, 0}, blue};
     Cube cube{1, {0, 0, 0}, grey};
     Plane plane{{0, 0, 0}, {0, 1, 0}, grey_light};
@@ -70,14 +70,16 @@ void test_renderer() {
     //     .render(32, "./results/rt-scene.png");
 
     // Debug Go!
-    DebugInstanceRenderer(camera, scene, APP_CONCURRENCY)
-        .render("./results/instance.png");
+    // DebugInstanceRenderer(camera, scene, APP_CONCURRENCY)
+    //     .render("./results/instance.png");
     // DebugNormalRenderer(camera, scene, APP_CONCURRENCY)
     //     .render("./results/normal.png");
     // DebugDepthRenderer(camera, scene, APP_CONCURRENCY)
     //     .render("./results/depth.png");
-    // DebugVisibilityRenderer(camera, scene, APP_CONCURRENCY, p1)
-    //     .render("./results/vis-p1.png");
-    // DebugVisibilityRenderer(camera, scene, APP_CONCURRENCY, p2)
-    //     .render("./results/vis-p2.png");
+
+    // for (size_t i = 0; i < plights.size(); ++i) {
+    //     const auto &light = plights[i];
+    //     DebugVisibilityRenderer(camera, scene, APP_CONCURRENCY, light)
+    //         .render(std::format("./results/visibility-light-{}.png", i));
+    // }
 }

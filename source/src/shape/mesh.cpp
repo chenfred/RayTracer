@@ -3,22 +3,34 @@
 #include "shape/triangle.hpp"
 #include <optional>
 
-Mesh::Mesh(const std::vector<Triangle> &_triangles, const Material *_material) : triangles(_triangles), material{_material} {
-    for (const auto &tri : triangles) {
-        bounds.expand(tri.getBounds().value());
-    }
+// TEST: 测试BVH的实现
+Mesh::Mesh(std::vector<Triangle> &&_tri, const Material *_m) : material{_m} {
+    bvh.build(std::move(_tri));
+}
+
+Mesh::Mesh(const std::vector<Triangle> &_tri, const Material *_m) : triangles{_tri}, material{_m} {
+    bvh.build(std::vector<Triangle>(triangles));
 }
 
 std::optional<HitInfo> Mesh::intersect(const Ray &ray, float t_min, float t_max) const {
-    return intersectBrutally(ray, t_min, t_max);
+    return intersectWithBVH(ray, t_min, t_max);
+    // return intersectBrutally(ray, t_min, t_max);
 }
 
-// 暴力遍历求交法，之后会实现一个BVH求交
+std::optional<HitInfo> Mesh::intersectWithBVH(const Ray &ray, float t_min, float t_max) const {
+    auto hit = bvh.intersect(ray, t_min, t_max);
+    if (!hit) {
+        return {};
+    }
+    hit->hitMaterial = material;
+    return hit;
+}
+
 std::optional<HitInfo> Mesh::intersectBrutally(const Ray &ray, float t_min, float t_max) const {
     std::optional<HitInfo> closest_hit;
     float closet_t = t_max;
     for (const auto &triangle : triangles) {
-        if(!triangle.getBounds()->hasIntersection(ray, t_min, closet_t)){
+        if (!triangle.getBounds()->hasIntersection(ray, t_min, closet_t)) {
             continue;
         }
 
