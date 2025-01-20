@@ -1,39 +1,42 @@
 #include "shape/model.hpp"
 #include "shape/triangle.hpp"
 
+#include <cassert>
 #include <optional>
 #include <rapidobj/rapidobj.hpp>
 
-Model::Model(const std::vector<Mesh> &_meshes) : meshes{_meshes} {
-    for (const auto &mesh : meshes) {
-        bounds.expand(mesh.getBounds().value());
-    }
+Model::Model(std::vector<Mesh> &&meshes) {
+    bvh.build(std::move(meshes));
 }
 
 std::optional<HitInfo> Model::intersect(const Ray &ray, float t_min, float t_max) const {
-    std::optional<HitInfo> closest_hit;
-    float closet_t = t_max;
-    for (const auto &mesh : meshes) {
-        if(!mesh.getBounds()->hasIntersection(ray, t_min, closet_t)){
-            continue;
-        }
-        auto hit = mesh.intersect(ray, t_min, closet_t);
-        if (hit) {
-            closest_hit = hit;
-            closet_t = hit->t;
-        }
+    auto hit = bvh.intersect(ray, t_min, t_max);
+    if (!hit) {
+        return {};
     }
+    if (coveredMaterial) {
+        assert(false);
+        hit->hitMaterial = coveredMaterial;
+    }
+    return hit;
 
-    return closest_hit;
+    // std::optional<HitInfo> closest_hit;
+    // float closet_t = t_max;
+    // for (const auto &mesh : meshes) {
+    //     if (!mesh.getBounds()->hasIntersection(ray, t_min, closet_t)) {
+    //         continue;
+    //     }
+    //     auto hit = mesh.intersect(ray, t_min, closet_t);
+    //     if (hit) {
+    //         closest_hit = hit;
+    //         closet_t = hit->t;
+    //     }
+    // }
+
+    // return closest_hit;
 }
 
-void Model::setMaterial(const Material *m) {
-    for (auto &mesh : meshes) {
-        mesh.setMaterial(m);
-    }
-}
-
-std::vector<Mesh> Model::loadObj(const std::filesystem::path &path, const Material* m) {
+std::vector<Mesh> Model::loadObj(const std::filesystem::path &path, const Material *m) {
     std::string ext = path.extension().string();
     if (ext != ".obj") {
         throw std::runtime_error(std::format("Object format {} not implemented yet.", ext));
@@ -55,7 +58,7 @@ std::vector<Mesh> Model::loadObj(const std::filesystem::path &path, const Materi
     std::vector<Triangle> triangles;
     // 遍历每个面，创建三角形
     for (const auto &shape : result.shapes) {
-        triangles.clear();
+        std::vector<Triangle> triangles;
         for (size_t i = 0; i < shape.mesh.num_face_vertices.size(); ++i) {
             if (shape.mesh.num_face_vertices[i] != 3) {
                 throw std::runtime_error("Only triangular faces are supported.");
@@ -99,7 +102,7 @@ std::vector<Mesh> Model::loadObj(const std::filesystem::path &path, const Materi
             triangles.emplace_back(p0, p1, p2, n0, n1, n2);
         }
         // 将 mesh 添加到模型中
-        meshes.emplace_back(triangles, m);
+        meshes.emplace_back(std::move(triangles), m);
     }
 
     return meshes;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "accelerate/bvh.hpp"
 #include "shape/shape.hpp"
 #include "shape/triangle.hpp"
 
@@ -8,12 +9,11 @@ public:
     Cube(float edge, glm::vec3 center, const Material *m);
 
     std::optional<HitInfo> intersect(const Ray &ray, float t_min = FLOAT_CMP_EPS, float t_max = std::numeric_limits<float>::infinity()) const override;
-    std::optional<Bounds> getBounds() const override { return bounds; }
+    std::optional<Bounds> getBounds() const override { return bvh.getBounds(); }
 
     void setMaterial(const Material *m) { material = m; }
 
 private:
-    std::vector<Triangle> triangles;
-    Bounds bounds;
+    BVH<Triangle> bvh;
     const Material *material;
 };

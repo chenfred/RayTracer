@@ -48,14 +48,15 @@ void test_renderer() {
     // shapes
     // Model model{"resources/models/simple_dragon.obj", pink};
     Model model{"resources/models/dragon_87k.obj", pink};
+    // Model model{"resources/models/dragon_871k.obj", pink};
     Sphere sphere{1, {0, 0, 0}, blue};
-    Cube cube{1, {0, 0, 0}, grey};
+    Cube cube{1, {0, 0, 0}, blue};
     Plane plane{{0, 0, 0}, {0, 1, 0}, grey_light};
     scene.addShape(model, {0.5, 0, 0}, {1, 1, 1}, {0, -90, 0});
-    scene.addShape(sphere, {-0.5, 0, 0}, glm::vec3{0.25});
-    // scene.addShape(cube, {0.5, 0, 0}, glm::vec3{0.5});
-    // scene.addShape(plane, {0, -0.25, 0});
-    scene.addShape(cube, {0, -0.5 - 0.25, 0}, {16, 1, 16}); // cube plane
+    // scene.addShape(sphere, {-0.5, 0, 0}, glm::vec3{0.25});
+    scene.addShape(cube, {-0.5, 0, 0}, glm::vec3{0.25},{30,-45,45});
+    scene.addShape(plane, {0, -0.25, 0});
+    // scene.addShape(cube, {0, -0.5 - 0.25, 0}, {16, 1, 16}); // cube plane
 
     // Camera
     Film film{WIDTH, HEIGHT};

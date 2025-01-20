@@ -11,7 +11,7 @@
 #include <optional>
 #include <vector>
 
-// FIXME: 导致模型漏三角形
+// FIXME: 导致871k三角形的模型稀碎
 
 template <typename T>
 concept ShapeType = std::derived_from<T, Shape>;
@@ -21,7 +21,6 @@ struct BVHNode {
     Bounds bounds;
     std::vector<T> shapes;
     std::array<BVHNode<T> *, 2> children;
-
     void updateBounds() {
         bounds = {};
         for (const auto &shape : shapes) {
