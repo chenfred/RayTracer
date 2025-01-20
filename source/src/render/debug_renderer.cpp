@@ -1,5 +1,5 @@
 #include "renderer/debug_renderer.hpp"
-#include "util/global.hpp"
+#include "util/globals.hpp"
 
 glm::vec3 DebugInstanceRenderer::renderPixel(size_t x, size_t y) const {
     auto eyeRay = camera.generateEyeRay({x, y}, {rng.uniform(), rng.uniform()});

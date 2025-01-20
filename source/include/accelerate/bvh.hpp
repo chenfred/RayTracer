@@ -3,18 +3,15 @@
 #include "accelerate/bounds.hpp"
 #include "camera/ray.hpp"
 #include "shape/shape.hpp"
-#include "util/debug.hpp"
+#include "util/concepts.hpp"
+#include "func/tools.hpp"
 
 #include <array>
 #include <cassert>
-#include <format>
 #include <optional>
 #include <vector>
 
 // FIXME: 导致871k三角形的模型稀碎
-
-template <typename T>
-concept ShapeType = std::derived_from<T, Shape>;
 
 template <ShapeType T>
 struct BVHNode {
@@ -107,19 +104,16 @@ void BVH<T>::recursiveSplit(BVHNode<T> *node) {
 
     const auto &bounds = node->bounds;
     auto diag = bounds.diagonal();
-    size_t max_axis = diag.x > diag.y ? (diag.x > diag.z ? 0 : 2) : (diag.y > diag.z ? 1 : 2);
-    float mid = bounds.center()[max_axis];
-
-    std::array<std::vector<T>, 2> childShapes;
-    for (const auto shape : node->shapes) {
-        if (!shape.getBounds() || shape.getBounds().value().center()[max_axis] < mid) {
-            childShapes[0].push_back(shape);
-        } else {
-            childShapes[1].push_back(shape);
+    size_t maxAxis = diag.x > diag.y ? (diag.x > diag.z ? 0 : 2) : (diag.y > diag.z ? 1 : 2);
+    auto cmpShapeFunc = [maxAxis](const T& s1, const T& s2)->bool{
+        if(!s1.getBounds()){
+            return false;
         }
-    }
+        return s1.getBounds().value().center()[maxAxis]<s2.getBounds().value().center()[maxAxis];
+    };
+    std::array<std::vector<T>, 2> childShapes = split_shapes<T>(std::move(node->shapes), cmpShapeFunc, 0.5f);
     node->shapes.clear();
-    node->shapes.shrink_to_fit();
+    node->shapes.shrink_to_fit();    
 
     bool stopRecursion = false;
     if (childShapes[0].empty() || childShapes[1].empty()) {

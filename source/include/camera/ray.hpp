@@ -2,7 +2,7 @@
 
 #include "glm/geometric.hpp"
 #include "material/material.hpp"
-#include "util/debug.hpp"
+#include "func/tools.hpp"
 
 #include <format>
 #include <glm/glm.hpp>

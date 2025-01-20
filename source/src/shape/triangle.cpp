@@ -1,7 +1,7 @@
 #include "shape/triangle.hpp"
 #include "accelerate/bounds.hpp"
 #include "glm/common.hpp"
-#include "util/utils.hpp"
+#include "func/tools.hpp"
 
 #include <glm/geometric.hpp>
 #include <optional>

@@ -11,8 +11,7 @@
 #include "shape/plane.hpp"
 #include "shape/scene.hpp"
 #include "shape/sphere.hpp"
-#include "util/global.hpp"
-#include "util/timer.hpp"
+#include "util/globals.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -53,8 +52,8 @@ void test_renderer() {
     Cube cube{1, {0, 0, 0}, blue};
     Plane plane{{0, 0, 0}, {0, 1, 0}, grey_light};
     scene.addShape(model, {0.5, 0, 0}, {1, 1, 1}, {0, -90, 0});
-    // scene.addShape(sphere, {-0.5, 0, 0}, glm::vec3{0.25});
-    scene.addShape(cube, {-0.5, 0, 0}, glm::vec3{0.25},{30,-45,45});
+    scene.addShape(sphere, {-0.5, 0, 0}, glm::vec3{0.25});
+    // scene.addShape(cube, {-0.5, 0, 0}, glm::vec3{0.25},{30,-45,45});
     scene.addShape(plane, {0, -0.25, 0});
     // scene.addShape(cube, {0, -0.5 - 0.25, 0}, {16, 1, 16}); // cube plane
 

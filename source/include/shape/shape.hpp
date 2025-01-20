@@ -2,7 +2,7 @@
 
 #include "accelerate/bounds.hpp"
 #include "camera/ray.hpp"
-#include "util/global.hpp"
+#include "util/globals.hpp"
 
 #include <limits>
 #include <optional>

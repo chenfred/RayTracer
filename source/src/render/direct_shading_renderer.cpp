@@ -1,5 +1,5 @@
 #include "renderer/direct_shading_renderer.hpp"
-#include "util/global.hpp"
+#include "util/globals.hpp"
 
 #include <glm/geometric.hpp>
 
