@@ -1,11 +1,15 @@
 #include "shape/mesh.hpp"
 #include "camera/ray.hpp"
 #include "shape/triangle.hpp"
+#include "util/timer.hpp"
+
 #include <optional>
 
 // TEST: 测试BVH的实现
 Mesh::Mesh(std::vector<Triangle> &&triangles, const Material *_m) : material{_m} {
+    Timer timer{"build mesh BVH"};
     bvh.build(std::move(triangles));
+    timer.conclude();
 }
 
 std::optional<HitInfo> Mesh::intersect(const Ray &ray, float t_min, float t_max) const {

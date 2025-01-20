@@ -1,12 +1,15 @@
 #include "shape/model.hpp"
 #include "shape/triangle.hpp"
+#include "util/timer.hpp"
 
 #include <cassert>
 #include <optional>
 #include <rapidobj/rapidobj.hpp>
 
 Model::Model(std::vector<Mesh> &&meshes) {
+    Timer timer{"build model bvh"};
     bvh.build(std::move(meshes));
+    timer.conclude();
 }
 
 std::optional<HitInfo> Model::intersect(const Ray &ray, float t_min, float t_max) const {
