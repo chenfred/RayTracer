@@ -12,7 +12,7 @@ public:
     Model(std::vector<Mesh> &&meshes);
 
     std::optional<HitInfo> intersect(const Ray &ray, float t_min = FLOAT_CMP_EPS, float t_max = std::numeric_limits<float>::infinity()) const override;
-    std::optional<Bounds> getBounds() const override { return bvh.getBounds(); }
+    Bounds getBounds() const override { return bvh.getBounds(); }
     void setCoveredMaterial(const Material *m) { coveredMaterial = m; }; // 为所有mesh设置相同的material
 
 private:

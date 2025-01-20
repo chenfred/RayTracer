@@ -28,6 +28,7 @@ private:
     std::function<void(size_t, size_t)> lambda;
 };
 
+// TODO: 用生产者-消费者模型来优化现在的SpinLock方案
 class ThreadPool {
 public:
     ThreadPool() = delete;

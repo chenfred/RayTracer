@@ -1,12 +1,14 @@
 #include "accelerate/bounds.hpp"
 
+#include <cassert>
 #include <glm/glm.hpp>
 #include <stdexcept>
 
-Bounds::Bounds(const glm::vec3 &_posMin, const glm::vec3 &_posMax) : posMin(_posMin), posMax(_posMax) {
-    auto delta = posMax - posMin;
+Bounds::Bounds(const glm::vec3 &_posMin, const glm::vec3 &_posMax) : posMin{_posMin}, posMax{_posMax} {
+    auto diff = posMax - posMin;
     for (size_t i = 0; i < 3; ++i) {
-        if (delta[i] < FLOAT_CMP_EPS) {
+        assert(diff[i] >= 0);
+        if (diff[i] < FLOAT_CMP_EPS) {
             posMax[i] = posMin[i] + FLOAT_CMP_EPS;
         }
     }
@@ -14,6 +16,10 @@ Bounds::Bounds(const glm::vec3 &_posMin, const glm::vec3 &_posMax) : posMin(_pos
 
 // TODO: 有空再推一下
 bool Bounds::hasIntersection(const Ray &ray, float t_min, float t_max) const {
+    if (!isValid()) {
+        return false;
+    }
+
     auto t1 = (posMin - ray.getOrigin()) / ray.getDirection();
     auto t2 = (posMax - ray.getOrigin()) / ray.getDirection();
     auto tmin = glm::min(t1, t2);
@@ -35,13 +41,20 @@ void Bounds::expand(const glm::vec3 &pos) {
 }
 
 void Bounds::expand(const Bounds &bounds) {
+    if (!bounds.isValid()) {
+        return;
+    }
+
     posMin = glm::min(posMin, bounds.posMin);
     posMax = glm::max(posMax, bounds.posMax);
 }
 
 Bounds Bounds::transformedBounds(const glm::mat4 transMat) const {
-    Bounds bounds{};
+    if (!isValid()) {
+        return {};
+    }
 
+    Bounds bounds{};
     for (size_t index = 0; index < 8; ++index) {
         auto corner = this->corner(index);
         bounds.expand(glm::vec3(transMat * glm::vec4(corner, 1)));

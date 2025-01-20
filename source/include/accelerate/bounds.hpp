@@ -9,7 +9,7 @@
 
 class Bounds {
 public:
-    Bounds() : posMin(std::numeric_limits<float>::infinity()), posMax(-std::numeric_limits<float>::infinity()) {}
+    Bounds() : posMin{std::numeric_limits<float>::infinity()}, posMax{-std::numeric_limits<float>::infinity()} {}
     Bounds(const glm::vec3 &_posMin, const glm::vec3 &_posMax);
 
     bool hasIntersection(const Ray &ray, float t_min, float t_max) const;
@@ -27,4 +27,5 @@ public:
 
 private:
     glm::vec3 posMin, posMax;
+    // static inline const float BOUNDS_EDGE_EXPAND = FLOAT_CMP_EPS;
 };

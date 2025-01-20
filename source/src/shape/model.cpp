@@ -22,21 +22,6 @@ std::optional<HitInfo> Model::intersect(const Ray &ray, float t_min, float t_max
         hit->hitMaterial = coveredMaterial;
     }
     return hit;
-
-    // std::optional<HitInfo> closest_hit;
-    // float closet_t = t_max;
-    // for (const auto &mesh : meshes) {
-    //     if (!mesh.getBounds()->hasIntersection(ray, t_min, closet_t)) {
-    //         continue;
-    //     }
-    //     auto hit = mesh.intersect(ray, t_min, closet_t);
-    //     if (hit) {
-    //         closest_hit = hit;
-    //         closet_t = hit->t;
-    //     }
-    // }
-
-    // return closest_hit;
 }
 
 std::vector<Mesh> Model::loadObj(const std::filesystem::path &path, const Material *m) {

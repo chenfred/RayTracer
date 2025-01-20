@@ -4,6 +4,7 @@
 
 #include <vector>
 
+// TODO: 实现BVH管理所有ShapeInstance
 class Scene : public Shape {
 public:
     std::optional<HitInfo> intersect(const Ray &ray, float t_min = FLOAT_CMP_EPS, float t_max = std::numeric_limits<float>::infinity()) const override;

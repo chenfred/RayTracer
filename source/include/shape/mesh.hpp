@@ -12,7 +12,7 @@ public:
     Mesh(std::vector<Triangle> &&triangles, const Material *_m);
 
     std::optional<HitInfo> intersect(const Ray &ray, float t_min = FLOAT_CMP_EPS, float t_max = std::numeric_limits<float>::infinity()) const override;
-    std::optional<Bounds> getBounds() const override { return bvh.getBounds(); }
+    Bounds getBounds() const override { return bvh.getBounds(); }
 
     void setMaterial(const Material *m) { material = m; }
 

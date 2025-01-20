@@ -51,23 +51,4 @@ std::optional<HitInfo> Cube::intersect(const Ray &ray, float t_min, float t_max)
     }
     hit->hitMaterial = material;
     return hit;
-
-    // std::optional<HitInfo> closet_hit;
-    // float closet_t = t_max;
-    // for (const auto &triangle : triangles) {
-    //     if (!triangle.getBounds()->hasIntersection(ray, t_min, closet_t)) {
-    //         continue;
-    //     }
-
-    //     auto hitInfo = triangle.intersect(ray, t_min, closet_t);
-    //     if (hitInfo) {
-    //         closet_hit = hitInfo;
-    //         closet_t = hitInfo->t;
-    //     }
-    // }
-
-    // if (!closet_hit) {
-    //     return {};
-    // }
-    // return HitInfo{closet_t, closet_hit->hitPoint, closet_hit->hitNormal, material};
 }

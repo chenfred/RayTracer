@@ -12,7 +12,7 @@ public:
     Triangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2);
 
     std::optional<HitInfo> intersect(const Ray &ray, float t_min = FLOAT_CMP_EPS, float t_max = std::numeric_limits<float>::infinity()) const override;
-    std::optional<Bounds> getBounds() const override { return bounds; }
+    Bounds getBounds() const override { return bounds; }
 
 private:
     std::array<glm::vec3, 3> points, normals;
