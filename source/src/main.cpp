@@ -28,7 +28,7 @@ int main() {
 void test_renderer() {
     // Point Light
     std::vector<PointLight> plights{
-        PointLight{{-0.5, 1, 0}, glm::vec3{2}}, 
+        PointLight{{-0.75, 1, -1}, glm::vec3{2}}, 
         PointLight{{0.75, 1, 1}, glm::vec3{2}},
         };
 
@@ -66,7 +66,7 @@ void test_renderer() {
 
     // Go!
     DirectShadingRenderer(camera, scene, APP_CONCURRENCY, plights)
-        .render(1, "./results/scene.png");
+        .render(32, "./results/scene.png");
 
     // scene.addShape(sphere, {-0.75, 0.5, 1.0}, glm::vec3{0.1}, glm::vec3{0}, emit); // 发光小球
     // SimpleRayTracingRenderer(camera, scene, APP_CONCURRENCY)

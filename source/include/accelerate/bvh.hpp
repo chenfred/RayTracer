@@ -71,15 +71,13 @@ void BVH<T>::recursiveIntersect(BVHNode<T> *node, const Ray &ray, float t_min, f
         return;
     }
 
-    float closest_t = t_max;
-
     if (node->shapes.empty()) {
         // non-leafnode
         for (auto child : node->children) {
             std::optional<HitInfo> hit;
-            recursiveIntersect(child, ray, t_min, closest_t, hit);
-            if (hit && hit->t < closest_t) {
-                closest_t = hit->t;
+            recursiveIntersect(child, ray, t_min, t_max, hit);
+            if (hit) {
+                t_max = hit->t;
                 closestHit = hit;
             }
         }
@@ -87,9 +85,9 @@ void BVH<T>::recursiveIntersect(BVHNode<T> *node, const Ray &ray, float t_min, f
     }
 
     for (const auto &shape : node->shapes) {
-        std::optional<HitInfo> hit = shape.intersect(ray, t_min, closest_t);
+        std::optional<HitInfo> hit = shape.intersect(ray, t_min, t_max);
         if (hit) {
-            closest_t = hit->t;
+            t_max = hit->t;
             closestHit = hit;
         }
     }
