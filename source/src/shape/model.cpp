@@ -18,7 +18,6 @@ std::optional<HitInfo> Model::intersect(const Ray &ray, float t_min, float t_max
         return {};
     }
     if (coveredMaterial) {
-        assert(false);
         hit->hitMaterial = coveredMaterial;
     }
     return hit;

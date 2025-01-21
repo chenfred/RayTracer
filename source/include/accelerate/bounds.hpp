@@ -1,6 +1,7 @@
 #pragma once
 
 #include "camera/ray.hpp"
+#include "func/tools.hpp"
 
 #include <cassert>
 #include <format>
@@ -14,7 +15,7 @@ public:
 
     bool hasIntersection(const Ray &ray, float t_min, float t_max) const;
     Bounds transformedBounds(const glm::mat4 transMat) const;
-    bool isValid() const { return posMin.x <= posMax.x && posMin.y <= posMax.y && posMin.z <= posMax.z; }
+    bool isValid() const { return vless(posMin, posMax); }
     glm::vec3 diagonal() const { return posMax - posMin; }
     glm::vec3 center() const { return (posMin + posMax) * 0.5f; }
     glm::vec3 corner(size_t index) const;

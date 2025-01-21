@@ -1,13 +1,9 @@
 #pragma once
 
-#include "util/globals.hpp"
-#include "util/concepts.hpp"
-
-#include "func/tools.hpp"
-
 #include <format>
 #include <iostream>
 #include <string_view>
+#include <glm/glm.hpp>
 
 inline void debug_print(std::string_view msg){
     std::cout << "[DEBUG] " << msg << std::endl;

@@ -1,4 +1,4 @@
-#include "renderer/debug_renderer.hpp"
+#include "renderer/debug_renderers.hpp"
 #include "util/globals.hpp"
 
 glm::vec3 DebugInstanceRenderer::renderPixel(size_t x, size_t y) const {
