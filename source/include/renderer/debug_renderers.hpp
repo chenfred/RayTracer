@@ -1,0 +1,11 @@
+#pragma once
+
+#include "renderer.hpp"
+
+DEFINE_RENDERER(DebugInstanceRenderer)
+DEFINE_RENDERER(DebugNormalRenderer)
+DEFINE_RENDERER(DebugPositionRenderer)
+DEFINE_RENDERER(DebugDepthRenderer)
+
+DEFINE_POINT_LIGHT_RENDERER(DebugLightDirRenderer)
+DEFINE_POINT_LIGHT_RENDERER(DebugVisibilityRenderer)

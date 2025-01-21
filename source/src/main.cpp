@@ -1,11 +1,12 @@
 #include "camera/camera.hpp"
 #include "camera/film.hpp"
-#include "glm/fwd.hpp"
-#include "material/diffuse_material.hpp"
-#include "renderer/debug_renderer.hpp"
-#include "renderer/direct_shading_renderer.hpp"
-#include "renderer/light.hpp"
-#include "renderer/simple_rt_renderer.hpp"
+#include "camera/frame.hpp"
+#include "camera/light_sources.hpp"
+#include "func/debug_helpers.hpp"
+#include "glm/geometric.hpp"
+#include "material/basic_materials.hpp"
+#include "renderer/debug_renderers.hpp"
+#include "renderer/point_light_renderers.hpp"
 #include "shape/cube.hpp"
 #include "shape/model.hpp"
 #include "shape/plane.hpp"
@@ -28,61 +29,51 @@ int main() {
 void test_renderer() {
     // Point Light
     std::vector<PointLight> plights{
-        PointLight{{-0.5, 1, 0}, glm::vec3{2}}, 
+        PointLight{{-0.5, 1, 0}, glm::vec3{2}},
         PointLight{{0.75, 1, 1}, glm::vec3{2}},
-        };
-
-    // glm::vec3 light_pos{0, 0.25, 0};
-    // glm::vec3 light_intensity{3};
+    };
 
     // Material
-    auto *grey_light = new DiffuseMaterial(glm::vec3{0.3});
-    auto *grey = new DiffuseMaterial(glm::vec3{0.5});
-    auto *blue = new DiffuseMaterial({0.3, 0.3, 0.7});
-    auto *pink = new DiffuseMaterial({0.5, 0.1, 0.1});
-    auto *emit = new DiffuseMaterial({0.3, 0.3, 0.7}, glm::vec3{0.1});
+    auto *diffuse_lgrey = new DiffuseMaterial(glm::vec3{0.1});
+    auto *diffuse_grey = new DiffuseMaterial(glm::vec3{0.2});
+    auto *diffuse_blue = new DiffuseMaterial(glm::vec3{0.3, 0.3, 0.7});
+    auto *diffuse_red = new DiffuseMaterial(glm::vec3{0.5, 0.1, 0.1});
+    auto *specular = new SpecularMaterial(glm::vec3{1.0});
 
     // Scene
     Scene scene;
 
     // shapes
-    // Model nanosuit{"resources/models/nanosuit/nanosuit.obj", grey};
-    // Model model{"resources/models/dragon/simple_dragon.obj", pink};
-    Model dragon{"resources/models/dragon/dragon_87k.obj", pink};
-    // Model model{"resources/models/dragon_871k.obj", pink};
-    Sphere sphere{1, {0, 0, 0}, blue};
-    Cube cube{1, {0, 0, 0}, blue};
-    Plane plane{{0, 0, 0}, {0, 1, 0}, grey_light};
+    Model dragon{"resources/models/dragon/dragon_87k.obj", diffuse_grey};
+    Sphere sphere{1, {0, 0, 0}, specular};
+    Cube cube{1, {0, 0, 0}, diffuse_grey};
+    Plane x_plane{{0, 0, 0}, {1, 0, 0}, diffuse_red};
+    Plane y_plane{{0, 0, 0}, {0, 1, 0}, diffuse_red};
+    Plane z_plane{{0, 0, 0}, {0, 0, 1}, diffuse_red};
+
     scene.addShape(dragon, {0.5, 0, 0}, {1, 1, 1}, {0, -90, 0});
-    // scene.addShape(nanosuit, {0.5, -0.25, 0}, glm::vec3{0.05});
     scene.addShape(sphere, {-0.5, 0, 0}, glm::vec3{0.25});
-    // scene.addShape(cube, {-0.5, 0, 0}, glm::vec3{0.25},{30,-45,45});
-    scene.addShape(plane, {0, -0.25, 0});
-    // scene.addShape(cube, {0, -0.5 - 0.25, 0}, {16, 1, 16}); // cube plane
+
+    scene.addShape(y_plane, {0, -0.25, 0});                           // 地板
+    scene.addShape(y_plane, {0, 1.25, 0}, glm::vec3{1}, {0, 0, 180}); // 屋顶
+    scene.addShape(z_plane, {0, 0, -1});                              // 后方
+    scene.addShape(z_plane, {0, 0, 2}, glm::vec3{1.0}, {180, 0, 0});  // 前方
+    scene.addShape(x_plane, {-1, 0, 0});                              // 左侧
+    scene.addShape(x_plane, {1, 0, 0}, glm::vec3{1}, {0, 180, 0});    // 右侧
 
     // Camera
     Film film{WIDTH, HEIGHT};
     Camera camera(film, {0, 0, 1.5}, {0, 0, 0}, 90);
 
     // Go!
-    DirectShadingRenderer(camera, scene, APP_CONCURRENCY, plights)
-        .render(1, "./results/scene.png");
-
-    // scene.addShape(sphere, {-0.75, 0.5, 1.0}, glm::vec3{0.1}, glm::vec3{0}, emit); // 发光小球
-    // SimpleRayTracingRenderer(camera, scene, APP_CONCURRENCY)
-    //     .render(32, "./results/rt-scene.png");
+    // DirectShadingRenderer(camera, scene, APP_CONCURRENCY, plights)
+    //     .render(1, "./results/scene.png");
+    WhittedRayTracingRenderer(camera, scene, APP_CONCURRENCY, plights)
+        .render(16, "./results/scene-whitted-rt.png");
 
     // Debug Go!
-    // DebugInstanceRenderer(camera, scene, APP_CONCURRENCY)
-    //     .render("./results/instance.png");
-    // DebugNormalRenderer(camera, scene, APP_CONCURRENCY)
-    //     .render("./results/normal.png");
-    // DebugDepthRenderer(camera, scene, APP_CONCURRENCY)
-    //     .render("./results/depth.png");
-
-    // for (size_t i = 0; i < plights.size(); ++i) {
-    //     const auto &light = plights[i];
-    //     DebugVisibilityRenderer(camera, scene, APP_CONCURRENCY, light)
-    //         .render(std::format("./results/visibility-light-{}.png", i));
-    // }
+    DebugInstanceRenderer(camera, scene, APP_CONCURRENCY)
+        .render("./results/instance.png");
+    DebugNormalRenderer(camera, scene, APP_CONCURRENCY)
+        .render("./results/normal.png");
 }

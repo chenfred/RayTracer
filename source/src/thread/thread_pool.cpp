@@ -40,7 +40,6 @@ void ThreadPool::parallelFor(size_t width, size_t height, const std::function<vo
     divider *= 2;   // TEST: 增加任务数，让线程池的线程更容易分配到任务（任务数比线程数要多），理论上对于空旷的场景效率高点
     size_t chunk_width = std::ceil(static_cast<double>(width) / divider);
     size_t chunk_height = std::ceil(static_cast<double>(height) / divider);
-    assert(chunk_width > 0 && chunk_height > 0);
 
     for (size_t x = 0; x < width; x += chunk_width) {
         // 最后一块可能比较小
