@@ -8,7 +8,8 @@
 enum class ScatteringType {
     NONE,
     DIFFUSE,
-    SPECULAR
+    SPECULAR,
+    TRANSPARENT,
 };
 
 class Material {
@@ -19,7 +20,7 @@ public:
 
     virtual ScatteringType getScatteringType() const { return ScatteringType::NONE; }
     // 在以法线为Y+的局部坐标系采样wo方向，其中wi和wo均以散射点为起点
-    virtual glm::vec3 sampleDirectionLocalized(const glm::vec3 &wi, const RNG& rng) const { return {}; };
+    virtual glm::vec3 sampleDirectionLocalized(const glm::vec3 &wi, const RNG &rng) const { return {}; };
     // 采样散射率，wi和wo均以散射点为起点，beta为光线弹射的累计衰减
     virtual glm::vec3 sampleBSDF(const glm::vec3 &wi, const glm::vec3 &wo) const { return {}; };
     bool isEmitable() const { return !vless(emissive, glm::vec3{0}); }

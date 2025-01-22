@@ -1,8 +1,9 @@
 #pragma once
 
+#include "func/tools.hpp"
 #include "glm/geometric.hpp"
 #include "material/material.hpp"
-#include "func/tools.hpp"
+
 
 #include <format>
 #include <glm/glm.hpp>
@@ -13,7 +14,10 @@ public:
     Ray(const glm::vec3 &_ori, const glm::vec3 &_dir) : origin{_ori}, direction{_dir} {}
     ~Ray() = default;
 
+    // 变换一个Ray，然后归一化direction
     Ray transformedRay(const glm::mat4 &transMat) const;
+    // 变换一个Ray，但不归一化direction
+    Ray transformedRayAbnormalized(const glm::mat4 &transMat) const;
     float hitAtTime(const glm::vec3 &hitPoint) const { return glm::length(hitPoint - origin); }
     glm::vec3 hitAtPoint(float t) const { return origin + t * direction; }
     glm::vec3 getOrigin() const { return origin; }

@@ -5,7 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 Camera::Camera(Film &_film, const glm::vec3 &_pos, const glm::vec3 &_lookAtPoint, float yAngleFOV) : film{_film}, position{_pos} {
-    clip2viewMat = glm::inverse(glm::perspective(glm::radians(yAngleFOV), film.getAspectRatio(), 1.0f, 2.0f));
+    clip2viewMat = glm::inverse(glm::perspective(glm::radians(yAngleFOV), film.getAspectRatio(), 1.0f, 10.0f));
     view2worldMat = glm::inverse(glm::lookAt(position, _lookAtPoint, {0, 1, 0}));
 }
 

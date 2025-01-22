@@ -1,7 +1,6 @@
 #include "camera/frame.hpp"
 #include "util/globals.hpp"
 
-// FIXME: 对normal的转换有问题
 // TODO: 推一下这个坐标空间的变换
 LocalFrame::LocalFrame(const glm::vec3 &normal) {
     ys = normal;

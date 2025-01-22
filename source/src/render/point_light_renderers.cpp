@@ -26,7 +26,7 @@ glm::vec3 DirectShadingRenderer::renderPixel(size_t x, size_t y) const {
 
         glm::vec3 albedo_pi = light.intensity * material->sampleBSDF(-lightDir, viewDir);
         // accumulate ambient term ahead
-        radiance += albedo_pi * 0.01f * light.intensity;
+        radiance += albedo_pi * 0.01f * light.intensity; 
 
         if (glm::dot(lightDir, normal) < 0) {
             continue;
@@ -50,7 +50,7 @@ glm::vec3 DirectShadingRenderer::renderPixel(size_t x, size_t y) const {
     return radiance;
 }
 
-static constexpr size_t LIGHTRAY_BOUNCES_LIMITED = 128;
+static constexpr size_t LIGHTRAY_BOUNCES_LIMITED = 1024;
 static constexpr float P_ROULETTE = 0.9f;
 glm::vec3 WhittedRayTracingRenderer::renderPixel(size_t x, size_t y) const {
     auto ray = camera.generateEyeRay({x, y}, {rng.uniform(), rng.uniform()});
@@ -62,18 +62,10 @@ glm::vec3 WhittedRayTracingRenderer::renderPixel(size_t x, size_t y) const {
             break;
         }
 
-        // TODO: 要改进对发光体的处理
-        const Material *material = hit->hitMaterial;
-        if (material->isEmitable()) {
-            debug_print("Encountered an emitable object.");
-            radiance += beta * material->getEmissive();
-            break;
-        }
-
         // 提取弹射点信息
-        auto hitTime = hit->t;
         auto hitPoint = hit->hitPoint;
         auto hitNormal = hit->hitNormal;
+        const Material *material = hit->hitMaterial;
 
         // 转换到法线的本地坐标系，方便计算
         LocalFrame frame{hitNormal};
@@ -100,7 +92,7 @@ glm::vec3 WhittedRayTracingRenderer::renderPixel(size_t x, size_t y) const {
         }
 
         // 累加当前弹射点的radiance贡献
-        radiance += beta * local_shading / P_ROULETTE;
+        radiance += beta * (local_shading + material->getEmissive()) / P_ROULETTE;
         beta *= material->sampleBSDF(wi_local, wo_local);
 
         // 继续发射光线
@@ -108,7 +100,7 @@ glm::vec3 WhittedRayTracingRenderer::renderPixel(size_t x, size_t y) const {
         remaining_bounces--;
     }
 
-    if(!remaining_bounces){
+    if (!remaining_bounces) {
         debug_print("Hit the light ray bounces limit.");
     }
 

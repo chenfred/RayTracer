@@ -1,6 +1,7 @@
 #include "shape/scene.hpp"
 #include "accelerate/bounds.hpp"
 #include "camera/ray.hpp"
+#include "func/graphics.hpp"
 #include "shape/shape.hpp"
 
 #include <cassert>
@@ -9,6 +10,35 @@
 #include <optional>
 
 std::optional<HitInfo> Scene::intersect(const Ray &ray, float t_min, float t_max) const {
+    std::optional<HitInfo> closestHit_modelspace;
+    const ShapeInstance *closest_instance;
+    float closestTime = t_max;
+    for (const auto &instance : instances) {
+        const auto bounds = instance.bounds;
+        if (bounds.isValid() && !bounds.hasIntersection(ray, t_min, closestTime)) {
+            continue;
+        }
+
+        // 为了保持相交time在model空间和在world空间的一致可比较，这里的transformedRay不能对dir进行归一化：ray在transMat的作用下有可能被拉长或压缩
+        const auto ray_modelspace = ray.transformedRayAbnormalized(instance.world2modelMat);
+        const auto hit_modelspace = instance.shape.intersect(ray_modelspace, t_min, closestTime);
+        if (hit_modelspace) {
+            closestTime = hit_modelspace->t;
+            closestHit_modelspace = hit_modelspace;
+            closest_instance = &instance;
+        }
+    }
+    if (!closestHit_modelspace) {
+        return {};
+    }
+
+    auto hitPoint = transformedPoint(closestHit_modelspace->hitPoint, closest_instance->model2worldMat);
+    auto hitNormal = transformedNormal(closestHit_modelspace->hitNormal, closest_instance->world2modelMat);
+    auto hitMaterial = closest_instance->material ? closest_instance->material : closestHit_modelspace->hitMaterial;
+    return HitInfo{closestTime, hitPoint, hitNormal, hitMaterial, closest_instance};
+}
+
+std::optional<HitInfo> Scene::intersectTransformTime(const Ray &ray, float t_min, float t_max) const {
     float closestHitTime = t_max;
     const ShapeInstance *closest_instance;
     glm::vec3 closestHitPoint;
@@ -20,9 +50,14 @@ std::optional<HitInfo> Scene::intersect(const Ray &ray, float t_min, float t_max
 
         auto ray_modelspace = ray.transformedRay(instance.world2modelMat);
         // 需要将相交time先从worldspace转到modelspace
-        auto closestHitTime_modelspace = std::isinf(closestHitTime) ? closestHitTime
-                                                                    : ray_modelspace.hitAtTime(ray.hitAtPoint(closestHitTime)); 
-        auto hit_modelspace = instance.shape.intersect(ray_modelspace, t_min, closestHitTime);
+        float t_min_modelspace =
+            ray_modelspace.hitAtTime(transformedPoint(ray.hitAtPoint(t_min), instance.world2modelMat));
+        float t_max_modelspace =
+            std::isinf(closestHitTime)
+                ? closestHitTime
+                : ray_modelspace.hitAtTime(transformedPoint(ray.hitAtPoint(closestHitTime), instance.world2modelMat));
+
+        auto hit_modelspace = instance.shape.intersect(ray_modelspace, t_min_modelspace, t_max_modelspace);
         if (!hit_modelspace) {
             continue;
         }
