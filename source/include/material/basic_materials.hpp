@@ -8,7 +8,7 @@ public:
     DiffuseMaterial(const glm::vec3 &_emissive, const glm::vec3 &_albedo) : Material{_emissive}, albedo{_albedo} {}
 
     ScatteringType getScatteringType() const override { return ScatteringType::DIFFUSE; }
-    glm::vec3 sampleDirectionLocalized(const glm::vec3 &wi, const RNG& rng) const override;
+    glm::vec3 sampleDirectionLocalized(const glm::vec3 &wi, const RNG &rng) const override;
     glm::vec3 sampleBSDF(const glm::vec3 &wi, const glm::vec3 &wo) const override;
 
 private:
@@ -21,9 +21,22 @@ public:
     SpecularMaterial(const glm::vec3 &_emissive, const glm::vec3 &_reflect) : Material{_emissive}, reflectance{_reflect} {}
 
     ScatteringType getScatteringType() const override { return ScatteringType::SPECULAR; }
-    glm::vec3 sampleDirectionLocalized(const glm::vec3 &wi, const RNG& rng) const override;
+    glm::vec3 sampleDirectionLocalized(const glm::vec3 &wi, const RNG &rng) const override;
     glm::vec3 sampleBSDF(const glm::vec3 &wi, const glm::vec3 &wo) const override;
 
 private:
     glm::vec3 reflectance;
+};
+
+class TransparentMaterial : public Material {
+public:
+    TransparentMaterial(float _refIndex, const glm::vec3 _transmittance = glm::vec3{1}) : refIndex(_refIndex), transmittance{_transmittance} {}
+
+    ScatteringType getScatteringType() const override { return ScatteringType::TRANSPARENT; }
+    glm::vec3 sampleDirectionLocalized(const glm::vec3 &wi, const RNG &rng) const override;
+    glm::vec3 sampleBSDF(const glm::vec3 &wi, const glm::vec3 &wo) const override;
+
+private:
+    float refIndex;
+    glm::vec3 transmittance;
 };

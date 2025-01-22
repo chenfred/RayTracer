@@ -53,7 +53,7 @@ glm::vec3 DebugLightDirRenderer::renderPixel(size_t x, size_t y) const {
     const auto lightVec = light.position - point;
     const auto lightDir = glm::normalize(lightVec);
 
-    return lightDir;
+    return lightDir * 0.5f + 0.5f;
 }
 
 glm::vec3 DebugVisibilityRenderer::renderPixel(size_t x, size_t y) const {

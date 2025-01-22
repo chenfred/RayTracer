@@ -14,7 +14,7 @@ protected:
     Camera &camera;
     const Scene &scene;
     ThreadPool threadPool;
-    RNG rng{};
+    RNG rng{static_cast<size_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count())};
 
 private:
     virtual glm::vec3 renderPixel(size_t x, size_t y) const = 0;

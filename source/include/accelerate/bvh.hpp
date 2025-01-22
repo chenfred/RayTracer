@@ -3,6 +3,7 @@
 #include "accelerate/bounds.hpp"
 #include "camera/ray.hpp"
 #include "func/tools.hpp"
+#include "func/graphics.hpp"
 #include "shape/shape.hpp"
 #include "util/concepts.hpp"
 
