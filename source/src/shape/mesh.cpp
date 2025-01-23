@@ -5,7 +5,7 @@
 
 #include <optional>
 
-Mesh::Mesh(std::vector<Triangle> &&triangles, const Material *_m) : material{_m} {
+Mesh::Mesh(std::vector<Triangle> &&triangles) {
     Timer timer{"build mesh BVH"};
     bvh.build(std::move(triangles));
     timer.conclude();

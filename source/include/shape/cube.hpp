@@ -6,7 +6,7 @@
 
 class Cube: public Shape{
 public:
-    Cube(float edge, glm::vec3 center, const Material *m);
+    Cube(float edge, glm::vec3 center);
 
     std::optional<HitInfo> intersect(const Ray &ray, float t_min = FLOAT_CMP_EPS, float t_max = std::numeric_limits<float>::infinity()) const override;
     Bounds getBounds() const override { return bvh.getBounds(); }
@@ -15,5 +15,5 @@ public:
 
 private:
     BVH<Triangle> bvh;
-    const Material *material;
+    const Material *material{};
 };

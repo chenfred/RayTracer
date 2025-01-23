@@ -8,7 +8,7 @@
 
 class Sphere : public Shape {
 public:
-    Sphere(float _r, const glm::vec3 &_c, const Material *_m) : radius(_r), center(_c), bounds(_c - _r, _c + _r), material(_m) {}
+    Sphere(float _r, const glm::vec3 &_c) : radius(_r), center(_c), bounds(_c - _r, _c + _r) {}
 
     std::optional<HitInfo> intersect(const Ray &ray, float t_min = FLOAT_CMP_EPS, float t_max = std::numeric_limits<float>::infinity()) const override;
     Bounds getBounds() const override { return bounds; };

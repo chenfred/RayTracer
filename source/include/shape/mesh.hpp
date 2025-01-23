@@ -8,8 +8,8 @@
 
 class Mesh : public Shape {
 public:
-    Mesh(const std::vector<Triangle> &triangles, const Material *_m) : Mesh(std::vector<Triangle>(triangles), _m) {}
-    Mesh(std::vector<Triangle> &&triangles, const Material *_m);
+    Mesh(const std::vector<Triangle> &triangles) : Mesh(std::vector<Triangle>(triangles)) {}
+    Mesh(std::vector<Triangle> &&triangles);
 
     std::optional<HitInfo> intersect(const Ray &ray, float t_min = FLOAT_CMP_EPS, float t_max = std::numeric_limits<float>::infinity()) const override;
     Bounds getBounds() const override { return bvh.getBounds(); }

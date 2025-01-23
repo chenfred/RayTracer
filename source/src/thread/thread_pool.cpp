@@ -30,14 +30,18 @@ ThreadPool::~ThreadPool() {
     threads.clear();
 }
 
-void ThreadPool::parallelFor(size_t width, size_t height, const std::function<void(size_t, size_t)> &f) {
+void ThreadPool::parallelFor(size_t width, size_t height, const std::function<void(size_t, size_t)> &f, bool complexTask) {
     if (threads.empty()) {
         serialFor(width, height, f);
         return;
     }
 
     double divider = std::sqrt(threads.size()); // 把width*height切分成小块的chunk_width*chunk*height，均匀地分配给池子里的线程
-    divider *= 2;   // TEST: 增加任务数，让线程池的线程更容易分配到任务（任务数比线程数要多），理论上对于空旷的场景效率高点
+    if (complexTask) {
+        // TEST: 对于复杂的任务，增加并发数有助于线程之间的负载均衡：让一个线程负责多个任务（任务数比线程数要多），理论上对于空旷的场景效率高点
+        divider *= 4;
+    }
+
     size_t chunk_width = std::ceil(static_cast<double>(width) / divider);
     size_t chunk_height = std::ceil(static_cast<double>(height) / divider);
 
