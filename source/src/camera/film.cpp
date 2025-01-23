@@ -60,7 +60,7 @@ void Film::saveToPNG(const std::filesystem::path &path, ThreadPool *threadPool) 
 
     if (threadPool) {
         // 用线程池执行并发写入
-        threadPool->parallelFor(height, width, f_loadingPixelData);
+        threadPool->parallelFor(height, width, f_loadingPixelData, false);
         threadPool->wait();
     } else {
         for (size_t y = 0; y < height; ++y) {

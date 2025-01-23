@@ -82,17 +82,17 @@ std::optional<HitInfo> Scene::intersectTransformTime(const Ray &ray, float t_min
     return HitInfo{closestHitTime, closestHitPoint, normal, material, closest_instance};
 }
 
-void Scene::addShape(const Shape &shape, const glm::vec3 &pos, const glm::vec3 &scale, const glm::vec3 &rotate, const Material *material) {
+void Scene::addShape(const Shape &shape, const Material *material, const glm::vec3 &pos, const glm::vec3 &scale, const glm::vec3 &rotate) {
     glm::mat4 model2worldMat =
         glm::translate(glm::mat4{1}, pos) *
         glm::rotate(glm::mat4{1}, glm::radians(rotate.z), {0, 0, 1}) *
         glm::rotate(glm::mat4{1}, glm::radians(rotate.y), {0, 1, 0}) *
         glm::rotate(glm::mat4{1}, glm::radians(rotate.x), {1, 0, 0}) *
         glm::scale(glm::mat4{1}, scale);
-    addShape(shape, model2worldMat, material);
+    addShape(shape, material, model2worldMat);
 }
 
-void Scene::addShape(const Shape &shape, const glm::mat4 model2worldMat, const Material *material) {
+void Scene::addShape(const Shape &shape, const Material *material, const glm::mat4 model2worldMat) {
     Bounds bounds, boundsModelspace = shape.getBounds();
     if (boundsModelspace.isValid()) {
         bounds = boundsModelspace.transformedBounds(model2worldMat);

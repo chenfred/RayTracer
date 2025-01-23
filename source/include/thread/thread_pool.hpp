@@ -36,7 +36,7 @@ public:
     ~ThreadPool();
 
     // 为[0, width)*[0, height)的(x, y)并行执行f(x, y)
-    void parallelFor(size_t width, size_t height, const std::function<void(size_t, size_t)> &f);
+    void parallelFor(size_t width, size_t height, const std::function<void(size_t, size_t)> &f, bool complexTask = true);
     void serialFor(size_t width, size_t height, const std::function<void(size_t, size_t)> &f);
     void wait() const;
 

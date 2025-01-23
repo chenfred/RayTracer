@@ -100,9 +100,7 @@ glm::vec3 WhittedRayTracingRenderer::renderPixel(size_t x, size_t y) const {
         remaining_bounces--;
     }
 
-    if (!remaining_bounces) {
-        debug_print("Hit the light ray bounces limit.");
-    }
+    debug_print("Hit the light ray bounces limit.", !remaining_bounces);
 
     return radiance;
 }

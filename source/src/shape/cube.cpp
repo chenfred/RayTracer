@@ -20,7 +20,7 @@ static constexpr std::array<std::array<int, 3>, 12> faceTriangles = {{
     {{1, 6, 5}} // +X face
 }};
 
-Cube::Cube(float edge, glm::vec3 center, const Material *m) : material{m} {
+Cube::Cube(float edge, glm::vec3 center) {
     // 计算正方体顶点坐标
     float halfEdge = edge / 2.0f;
     std::array<glm::vec3, 8> vertices{

@@ -13,6 +13,7 @@ glm::vec3 DiffuseMaterial::sampleBSDF(const glm::vec3 &wi, const glm::vec3 &wo) 
 }
 
 glm::vec3 SpecularMaterial::sampleDirectionLocalized(const glm::vec3 &wi, const RNG &rng) const {
+    // return glm::reflect(-wi,{0,1,0});
     return {-wi.x, wi.y, -wi.z};
 }
 glm::vec3 SpecularMaterial::sampleBSDF(const glm::vec3 &wi, const glm::vec3 &wo) const {
@@ -24,6 +25,8 @@ glm::vec3 SpecularMaterial::sampleBSDF(const glm::vec3 &wi, const glm::vec3 &wo)
 
 // FIXME: 折射算法有问题
 glm::vec3 TransparentMaterial::sampleDirectionLocalized(const glm::vec3 &wi, const RNG &rng) const {
+    return glm::refract(-wi,{0,1,0},refIndex);
+
     // 法线方向
     constexpr glm::vec3 normal{0,1,0};
 
@@ -60,6 +63,8 @@ float fresnelSchlick(float cosTheta, float refIndex) {
 }
 
 glm::vec3 TransparentMaterial::sampleBSDF(const glm::vec3 &wi, const glm::vec3 &wo) const {
+    return transmittance;
+
     // 计算入射角的余弦值
     float cosThetaI = glm::dot(wi, glm::vec3{0, 1, 0});
 

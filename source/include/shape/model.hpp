@@ -7,17 +7,18 @@
 
 class Model : public Shape {
 public:
-    Model(const std::filesystem::path &path, const Material *_m) : Model(loadObj(path, _m)) {}
+    Model(const std::filesystem::path &path) : Model(loadObj(path)) {}
     Model(const std::vector<Mesh> &meshes) : Model(std::vector<Mesh>(meshes)) {}
     Model(std::vector<Mesh> &&meshes);
 
     std::optional<HitInfo> intersect(const Ray &ray, float t_min = FLOAT_CMP_EPS, float t_max = std::numeric_limits<float>::infinity()) const override;
     Bounds getBounds() const override { return bvh.getBounds(); }
-    void setCoveredMaterial(const Material *m) { coveredMaterial = m; }; // 为所有mesh设置相同的material
+    
+    void setFallbackMaterial(const Material *m) { fallbackMaterial = m; }; // 设置mesh无material时的默认值
 
 private:
     BVH<Mesh> bvh;
-    const Material *coveredMaterial{};
+    const Material *fallbackMaterial{};
 
-    std::vector<Mesh> loadObj(const std::filesystem::path &path, const Material *m);
+    std::vector<Mesh> loadObj(const std::filesystem::path &path);
 };

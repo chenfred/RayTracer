@@ -17,13 +17,13 @@ std::optional<HitInfo> Model::intersect(const Ray &ray, float t_min, float t_max
     if (!hit) {
         return {};
     }
-    if (coveredMaterial) {
-        hit->hitMaterial = coveredMaterial;
+    if (!hit->hitMaterial) {
+        hit->hitMaterial = fallbackMaterial;
     }
     return hit;
 }
 
-std::vector<Mesh> Model::loadObj(const std::filesystem::path &path, const Material *m) {
+std::vector<Mesh> Model::loadObj(const std::filesystem::path &path) {
     std::string ext = path.extension().string();
     if (ext != ".obj") {
         throw std::runtime_error(std::format("Object format {} not implemented yet.", ext));
@@ -89,7 +89,7 @@ std::vector<Mesh> Model::loadObj(const std::filesystem::path &path, const Materi
             triangles.emplace_back(p0, p1, p2, n0, n1, n2);
         }
         // 将 mesh 添加到模型中
-        meshes.emplace_back(std::move(triangles), m);
+        meshes.emplace_back(std::move(triangles));
     }
 
     return meshes;
