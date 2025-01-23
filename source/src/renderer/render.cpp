@@ -12,7 +12,7 @@ void Renderer::render(size_t spp, const std::filesystem::path &savePath, ThreadP
     auto &film = camera.getFilm();
     film.clear();
 
-    Timer timer{std::format("Rendering {} SPPs.", spp)};
+    Timer timer{std::format("Rendering {} SPPs", spp)};
     ProgressBar bar{"Multi-Sample Rendering"};
 
     auto f = [&](size_t x, size_t y) -> void {

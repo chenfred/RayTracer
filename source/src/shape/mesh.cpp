@@ -6,7 +6,7 @@
 #include <optional>
 
 Mesh::Mesh(std::vector<Triangle> &&triangles) {
-    Timer timer{"build mesh BVH"};
+    Timer timer{"Build mesh BVH"};
     bvh.build(std::move(triangles));
     timer.conclude();
 }

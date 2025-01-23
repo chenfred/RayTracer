@@ -30,10 +30,13 @@ void test_path_tracing() {
     RGB pink{255, 128, 128}, green{128, 255, 128}, blue{128, 128, 255}, white{255,255,255};
     RGB purple = pink.blend(blue), yellow = pink.blend(green), cyan = blue.blend(green);
 
-    auto *emit_blue = new DiffuseMaterial(blue.radiance(), blue.radiance());
-    auto *emit_pink = new DiffuseMaterial(pink.radiance(), pink.radiance());
-    auto *emit_green = new DiffuseMaterial(green.radiance(), green.radiance());
-    auto *emit_white = new DiffuseMaterial(white.radiance(), white.radiance());
+    auto *emit_blue = new DiffuseMaterial(blue.radiance(), glm::vec3{1});
+    auto *emit_pink = new DiffuseMaterial(pink.radiance(), glm::vec3{1});
+    auto *emit_green = new DiffuseMaterial(green.radiance(), glm::vec3{1});
+    auto *emit_white = new DiffuseMaterial(white.radiance(), glm::vec3{1});
+    auto *emit_purple = new DiffuseMaterial(purple.radiance(), glm::vec3{1});
+    auto *emit_yellow = new DiffuseMaterial(yellow.radiance(), glm::vec3{1});
+    auto *emit_cyan = new DiffuseMaterial(cyan.radiance(), glm::vec3{1});
 
     auto *diffuse_ground = new DiffuseMaterial(RGB(120, 204, 157).radiance());
     auto *diffuse_what = new DiffuseMaterial(RGB(202, 159, 117).radiance());
@@ -54,14 +57,14 @@ void test_path_tracing() {
     // Scene
     Scene scene;
     scene.addShape(plane, diffuse_ground, {0, -0.25, 0});                                                  // 地面
-    scene.addShape(sphere, emit_pink, {-1.5, 0, 0}, glm::vec3{0.5});         // 左边球
-    scene.addShape(sphere, emit_blue, {1.5, 0, 0}, glm::vec3{0.5});          // 右边球
-    scene.addShape(sphere, emit_green, {0, 0.25, -2}, glm::vec3{0.5});       // 前方球
+    scene.addShape(sphere, emit_purple, {-1.5, 0, 0}, glm::vec3{0.5});         // 左边球
+    scene.addShape(sphere, emit_cyan, {1.5, 0, 0}, glm::vec3{0.5});          // 右边球
+    scene.addShape(sphere, emit_yellow, {0, 0.25, -2}, glm::vec3{0.5});       // 前方球
     scene.addShape(sphere, specular_full, {1.25, 0.25, -1}, glm::vec3{0.5}); // 右前方镜面球
     scene.addShape(sphere, emit_white, {0, 0, 3}, glm::vec3{0.5});           // 相机后方球
 
     // scene.addShape(sphere, {0, 0, 0}, glm::vec3{0.125}, glm::vec3{0}, specular_full); //中间的小球
-    scene.addShape(dragon, specular_full, {0, 0, 0}, {1, 1, 1}, {0, -90, 0});
+    scene.addShape(dragon, specular_half, {0, 0, 0}, {1, 1, 1}, {0, -90, 0});
 
     // ThreadPool
     ThreadPool *thread_pool = new ThreadPool{APP_CONCURRENCY};
@@ -74,7 +77,5 @@ void test_path_tracing() {
 
     // Render
     SimplePathTracingRenderer(camera, scene)
-        .render(1, "./results/scene-simple-pt.png", thread_pool);
-    WhittedRayTracingRenderer(camera, scene, {PointLight{{0, 1, 0}, glm::vec3{1}}})
-        .render(1, "./results/scene-whitted-rt.png", thread_pool);
+        .render(128, "./results/scene-simple-pt.png", thread_pool);
 }

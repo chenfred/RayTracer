@@ -7,7 +7,7 @@
 #include <rapidobj/rapidobj.hpp>
 
 Model::Model(std::vector<Mesh> &&meshes) {
-    Timer timer{"build model bvh"};
+    Timer timer{"Build model BVH"};
     bvh.build(std::move(meshes));
     timer.conclude();
 }
