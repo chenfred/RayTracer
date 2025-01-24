@@ -4,7 +4,7 @@
 // TODO: 推一下这个坐标空间的变换
 LocalFrame::LocalFrame(const glm::vec3 &normal) {
     ys = normal;
-    glm::vec3 up = glm::abs(normal.y) < 1.0f - FLOAT_CMP_EPS ? glm::vec3(0, 1, 0) : glm::vec3(0, 0, 1);
+    glm::vec3 up = glm::abs(normal.y) + FLOAT_CMP_EPS < 1.0f ? glm::vec3(0, 1, 0) : glm::vec3(0, 0, 1);
     xs = glm::normalize(glm::cross(up, normal));
     zs = glm::normalize(glm::cross(xs, ys));
 }

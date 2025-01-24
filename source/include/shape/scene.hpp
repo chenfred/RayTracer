@@ -8,7 +8,7 @@
 class Scene : public Shape {
 public:
     // 采用扭曲ray.dir（不进行归一化）来解决在modelspace和worldspace的光线行进时间不一致问题
-    std::optional<HitInfo> intersect(const Ray &ray, float t_min = FLOAT_CMP_EPS, float t_max = std::numeric_limits<float>::infinity()) const override;
+    std::optional<HitInfo> intersect(const Ray &ray, float t_min = FLOAT_LOOSE_POS_ZERO, float t_max = std::numeric_limits<float>::infinity()) const override;
 
     void addShapeInstance(const ShapeInstance &instance) { instances.push_back(instance); }
     void addShape(const Shape &shape, const Material *material,

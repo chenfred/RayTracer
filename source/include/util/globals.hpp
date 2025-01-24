@@ -3,6 +3,7 @@
 #include <glm/glm.hpp> 
 
 constexpr float M_PI = 3.1415926f;
+constexpr float FLOAT_LOOSE_POS_ZERO = 1e-5;
 constexpr float FLOAT_CMP_EPS = 1e-7;
 
 extern size_t INSTANCE_INDEX;

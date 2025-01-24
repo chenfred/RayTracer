@@ -6,13 +6,6 @@
 
 Bounds::Bounds(const glm::vec3 &_posMin, const glm::vec3 &_posMax)
     : posMin{_posMin - BOUNDS_EDGE_EXPANDSION}, posMax{_posMax + BOUNDS_EDGE_EXPANDSION} {
-    // auto diff = posMax - posMin;
-    // for (size_t i = 0; i < 3; ++i) {
-    //     assert(diff[i] >= 0);
-    //     if (diff[i] < FLOAT_CMP_EPS) {
-    //         posMax[i] = posMin[i] + FLOAT_CMP_EPS;
-    //     }
-    // }
 }
 
 // TODO: 有空再推一下

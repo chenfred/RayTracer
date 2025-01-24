@@ -3,9 +3,6 @@
 #include <array>
 #include <thread>
 
-// constexpr float M_PI = 3.1415926f;
-// constexpr float FLOAT_CMP_EPS = 1e-5;
-
 size_t INSTANCE_INDEX = 0;
 size_t APP_CONCURRENCY = std::thread::hardware_concurrency();
 

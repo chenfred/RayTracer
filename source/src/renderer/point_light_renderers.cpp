@@ -31,7 +31,7 @@ glm::vec3 DirectShadingRenderer::renderPixel(size_t x, size_t y) const {
         if (glm::dot(lightDir, normal) < 0) {
             continue;
         }
-        auto shadowedHit = scene.intersect(Ray{point, lightDir}, FLOAT_CMP_EPS, glm::length(lightVec));
+        auto shadowedHit = scene.intersect(Ray{point, lightDir}, FLOAT_LOOSE_POS_ZERO, glm::length(lightVec));
         if (shadowedHit) {
             continue;
         }
@@ -78,7 +78,7 @@ glm::vec3 WhittedRayTracingRenderer::renderPixel(size_t x, size_t y) const {
             auto lightVec = light.position - hitPoint;
             auto lightVecLength = glm::length(lightVec);
             auto lightDir = lightVec / lightVecLength; // 手工normalize
-            auto shadowedHit = scene.intersect(Ray{hitPoint, lightDir}, FLOAT_CMP_EPS, lightVecLength);
+            auto shadowedHit = scene.intersect(Ray{hitPoint, lightDir}, FLOAT_LOOSE_POS_ZERO, lightVecLength);
             if (shadowedHit) {
                 continue;
             }

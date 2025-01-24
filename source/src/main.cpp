@@ -64,7 +64,7 @@ void test_path_tracing() {
     scene.addShape(sphere, emit_white, {0, 0, 3}, glm::vec3{0.5});           // 相机后方球
 
     // scene.addShape(sphere, {0, 0, 0}, glm::vec3{0.125}, glm::vec3{0}, specular_full); //中间的小球
-    scene.addShape(dragon, specular_half, {0, 0, 0}, {1, 1, 1}, {0, -90, 0});
+    scene.addShape(dragon, specular_full, {0, 0, 0}, {1, 1, 1}, {0, -90, 0});
 
     // ThreadPool
     ThreadPool *thread_pool = new ThreadPool{APP_CONCURRENCY};

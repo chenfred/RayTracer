@@ -71,7 +71,7 @@ glm::vec3 DebugVisibilityRenderer::renderPixel(size_t x, size_t y) const {
     if (glm::dot(lightDir, normal) < 0) {
         return {};
     }
-    auto secondaryHit = scene.intersect(Ray{point, lightDir}, FLOAT_CMP_EPS, glm::length(lightVec));
+    auto secondaryHit = scene.intersect(Ray{point, lightDir}, FLOAT_LOOSE_POS_ZERO, glm::length(lightVec));
     if (secondaryHit) {
         return {};
     }

@@ -11,7 +11,7 @@ public:
     Model(const std::vector<Mesh> &meshes) : Model(std::vector<Mesh>(meshes)) {}
     Model(std::vector<Mesh> &&meshes);
 
-    std::optional<HitInfo> intersect(const Ray &ray, float t_min = FLOAT_CMP_EPS, float t_max = std::numeric_limits<float>::infinity()) const override;
+    std::optional<HitInfo> intersect(const Ray &ray, float t_min, float t_max) const override;
     Bounds getBounds() const override { return bvh.getBounds(); }
     
     void setFallbackMaterial(const Material *m) { fallbackMaterial = m; }; // 设置mesh无material时的默认值
