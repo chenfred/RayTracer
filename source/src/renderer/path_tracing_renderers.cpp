@@ -27,7 +27,7 @@ glm::vec3 SimplePathTracingRenderer::renderPixel(size_t x, size_t y) const {
 
 
         // FIXME: 这里存在奇怪的背向法线的弹射
-        // debug_print("Encounter a transmittance.", glm::dot(wo_local, {0,1,0})<0);
+        // DEBUG_PRINT("Encounter a transmittance.", glm::dot(wo_local, {0,1,0})<0)
 
         // 累加光源的辐射值
         radiance += beta * material->getEmissive() / P_ROULETTE;
@@ -38,7 +38,7 @@ glm::vec3 SimplePathTracingRenderer::renderPixel(size_t x, size_t y) const {
         remaining_bounces--;
     }
 
-    debug_print("Hit the light ray bounces limit.", !remaining_bounces);
+    DEBUG_PRINT("Hit the light ray bounces limit.", !remaining_bounces)
 
     return radiance;
 }

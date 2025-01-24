@@ -3,9 +3,28 @@
 #include <format>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <stdexcept>
 #include <string_view>
 
 #define ENABLE_DEBUG_PRINT
+
+#ifdef ENABLE_DEBUG_PRINT
+#define DEBUG_LINE(...) __VA_ARGS__ ;
+#define DEBUG_PRINT(...) debug_print(__VA_ARGS__);
+#define DEBUG_ASSERT(...) debug_assert(__VA_ARGS__);
+#else
+#define DEBUG_LINE(...)
+#define DEBUG_PRINT(...)
+#define DEBUG_ASSERT(...)
+#endif
+
+inline void debug_assert(bool condition){
+#ifdef ENABLE_DEBUG_PRINT
+    if(!condition){
+        throw std::runtime_error("Assertion Failed!");
+    }
+#endif
+}
 
 inline void debug_print(std::string_view msg, bool condition = true) {
 #ifdef ENABLE_DEBUG_PRINT

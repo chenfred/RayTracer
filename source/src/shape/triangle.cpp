@@ -45,29 +45,29 @@ std::optional<HitInfo> Triangle::intersect(const Ray &ray, float t_min, float t_
 
     // If the determinant is near zero, the ray lies in the plane of the triangle
     if (fequal(a, 0.0f)) {
-        return std::nullopt;
+        return {};
     }
 
     float f = 1.0f / a;
     glm::vec3 s = ray.getOrigin() - v0;
     float u = f * glm::dot(s, h);
 
-    if (u < 0.0f || u > 1.0f) {
-        return std::nullopt;
+    if (!in_range(u, 0.0f, 1.0f)) {
+        return {};
     }
 
     glm::vec3 q = glm::cross(s, edge1);
     float v = f * glm::dot(ray.getDirection(), q);
 
     if (v < 0.0f || u + v > 1.0f) {
-        return std::nullopt;
+        return {};
     }
 
     // At this stage we can compute t to find out where the intersection point is on the line.
     float t = f * glm::dot(edge2, q);
 
     if (!in_range(t, t_min, t_max)) {
-        return std::nullopt;
+        return {};
     }
 
     // Compute the barycentric coordinates

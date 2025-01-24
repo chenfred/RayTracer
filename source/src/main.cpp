@@ -45,9 +45,9 @@ void test_path_tracing() {
     auto *specular_half = new SpecularMaterial(RGB(128, 128, 128).radiance());
 
     // shapes
-    Model dragon{"resources/models/dragon/dragon_87k.obj"};
+    Model dragon{"resources/models/dragon/dragon_871k.obj"};
     Sphere sphere{1, {0, 0, 0}};
-    Cube cube{1, {0, 0, 0}};
+    // Cube cube{1, {0, 0, 0}};
     Plane plane{{0, 0, 0}, {0, 1, 0}};
 
     // Camera
@@ -77,5 +77,5 @@ void test_path_tracing() {
 
     // Render
     SimplePathTracingRenderer(camera, scene)
-        .render(128, "./results/scene-simple-pt.png", thread_pool);
+        .render(16, "./results/scene-simple-pt.png", thread_pool);
 }
