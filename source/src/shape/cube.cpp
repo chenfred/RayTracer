@@ -1,5 +1,6 @@
 #include "shape/cube.hpp"
 #include "shape/triangle.hpp"
+#include "util/timer.hpp"
 
 #include <cassert>
 
@@ -41,7 +42,9 @@ Cube::Cube(float edge, glm::vec3 center) {
     }
 
     // 构建bvh
+    Timer buildTimer{"Build cube BVH"};
     bvh.build(std::move(triangles));
+    buildTimer.conclude();
 }
 
 std::optional<HitInfo> Cube::intersect(const Ray &ray, float t_min, float t_max) const {

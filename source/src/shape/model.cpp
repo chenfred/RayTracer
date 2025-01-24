@@ -7,9 +7,9 @@
 #include <rapidobj/rapidobj.hpp>
 
 Model::Model(std::vector<Mesh> &&meshes) {
-    Timer timer{"Build model BVH"};
+    Timer buildTimer{"Build model BVH"};
     bvh.build(std::move(meshes));
-    timer.conclude();
+    buildTimer.conclude();
 }
 
 std::optional<HitInfo> Model::intersect(const Ray &ray, float t_min, float t_max) const {

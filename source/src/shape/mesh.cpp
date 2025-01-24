@@ -6,9 +6,9 @@
 #include <optional>
 
 Mesh::Mesh(std::vector<Triangle> &&triangles) {
-    Timer timer{"Build mesh BVH"};
+    Timer buildTimer{"Build mesh BVH"};
     bvh.build(std::move(triangles));
-    timer.conclude();
+    buildTimer.conclude();
 }
 
 std::optional<HitInfo> Mesh::intersect(const Ray &ray, float t_min, float t_max) const {
