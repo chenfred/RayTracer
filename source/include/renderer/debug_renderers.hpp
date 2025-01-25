@@ -2,10 +2,14 @@
 
 #include "renderer.hpp"
 
-DEFINE_RENDERER(DebugInstanceRenderer)
-DEFINE_RENDERER(DebugNormalRenderer)
-DEFINE_RENDERER(DebugPositionRenderer)
-DEFINE_RENDERER(DebugDepthRenderer)
+DEFINE_RENDERER(InstanceRenderer)
+DEFINE_RENDERER(NormalRenderer)
+DEFINE_RENDERER(PositionRenderer)
+DEFINE_RENDERER(DepthRenderer)
 
 DEFINE_POINT_LIGHT_RENDERER(DebugLightDirRenderer)
 DEFINE_POINT_LIGHT_RENDERER(DebugVisibilityRenderer)
+
+DEFINE_RENDERER(DebugBoundsDepthRenderer)
+DEFINE_RENDERER(DebugBoundsTestCountRenderer)
+DEFINE_RENDERER(DebugShapesTestCountRenderer)

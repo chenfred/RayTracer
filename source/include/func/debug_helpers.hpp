@@ -6,9 +6,9 @@
 #include <stdexcept>
 #include <string_view>
 
-#define ENABLE_DEBUG_PRINT
+// #define WITH_DEBUG_INFO
 
-#ifdef ENABLE_DEBUG_PRINT
+#ifdef WITH_DEBUG_INFO
 #define DEBUG_LINE(...) __VA_ARGS__ ;
 #define DEBUG_PRINT(...) debug_print(__VA_ARGS__);
 #define DEBUG_ASSERT(...) debug_assert(__VA_ARGS__);
@@ -19,7 +19,7 @@
 #endif
 
 inline void debug_assert(bool condition){
-#ifdef ENABLE_DEBUG_PRINT
+#ifdef WITH_DEBUG_INFO
     if(!condition){
         throw std::runtime_error("Assertion Failed!");
     }
@@ -27,7 +27,7 @@ inline void debug_assert(bool condition){
 }
 
 inline void debug_print(std::string_view msg, bool condition = true) {
-#ifdef ENABLE_DEBUG_PRINT
+#ifdef WITH_DEBUG_INFO
     if (condition) {
         std::cout << "[DEBUG] " << msg << std::endl;
     }
@@ -36,7 +36,7 @@ inline void debug_print(std::string_view msg, bool condition = true) {
 
 template <typename T, glm::qualifier Q, int C, int R>
 inline void print_mat(const glm::mat<C, R, T, Q> &m) {
-#ifdef ENABLE_DEBUG_PRINT
+#ifdef WITH_DEBUG_INFO
     for (int i = 0; i < R; ++i) {
         for (int j = 0; j < C; ++j) {
             if (j == 0) {
@@ -56,7 +56,7 @@ inline void print_mat(const glm::mat<C, R, T, Q> &m) {
 
 template <typename T, glm::qualifier Q, int L>
 inline void print_vec(const glm::vec<L, T, Q> &v) {
-#ifdef ENABLE_DEBUG_PRINT
+#ifdef WITH_DEBUG_INFO
     std::cout << "[";
     for (int i = 0; i < L; ++i) {
         std::cout << std::format("{:.2f}", v[i]);

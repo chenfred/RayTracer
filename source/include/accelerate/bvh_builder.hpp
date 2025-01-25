@@ -4,23 +4,37 @@
 #include "func/debug_helpers.hpp"
 #include "func/graphics.hpp"
 #include "util/concepts.hpp"
+#include <cstdint>
+
+constexpr uint32_t BVH_INTERSECT_STACK_PREALLOC_SIZE = 32;
 
 struct alignas(32) BVHNode {
     Bounds bounds;
-    uint32_t shapesSize;
+    uint16_t depth;
+    uint16_t numShapes;
     union { // 减少占用，用于对齐32字节
-        uint32_t shapesBegin;
-        uint32_t rchild;
+        uint32_t indexShapesBegin;
+        uint32_t indexRChild;
     };
 };
 
 template <ShapeType T>
 class BVHBuilder {
 private:
+public:
+    static std::vector<BVHNode> BuildBVHNodes(std::vector<T> &shapes) { return BVHBuilder(shapes).build(); }
+
+private:
+    std::vector<T> &shapes;
+    std::vector<BVHNode> nodes;
+
+    BVHBuilder(std::vector<T> &_shapes) : shapes{_shapes} {} // 隐藏构造器
+    std::vector<BVHNode> build();
     struct BVHBuildTreeNode {
         Bounds bounds;
         std::vector<T> shapes;
         std::array<BVHBuildTreeNode *, 2> children;
+        uint8_t depth;
         void updateBounds() {
             bounds = {};
             for (const T &shape : shapes) {
@@ -29,30 +43,23 @@ private:
         }
     };
     struct BVHBuildState {
-        uint32_t numTotalNodes{0}, numLeafNodes{0}, numTotalShapes{0}, maxLeafShapesNum{0};
+        uint32_t numTotalNodes{0}, numLeafNodes{0}, numTotalShapes{0}, maxLeafShapesNum{0}, maxDepth{0};
         void addLeafNode(BVHBuildTreeNode *treeNode) {
             numLeafNodes++;
             numTotalShapes += treeNode->shapes.size();
             maxLeafShapesNum = std::max<uint32_t>(maxLeafShapesNum, treeNode->shapes.size());
+            maxDepth = std::max<uint16_t>(maxDepth, treeNode->depth);
         }
         void print() const {
-            std::cout << std::format("NumTotalNodes: {}", numTotalNodes) << std::endl;
-            std::cout << std::format("numLeafNodes: {}", numLeafNodes) << std::endl;
-            std::cout << std::format("numTotalShapes: {}", numTotalShapes) << std::endl;
-            std::cout << std::format("maxLeafShapesNum: {}", maxLeafShapesNum) << std::endl;
+            std::cout << std::format(" - NumTotalNodes: {}", numTotalNodes) << std::endl;
+            std::cout << std::format(" - numLeafNodes: {}", numLeafNodes) << std::endl;
+            std::cout << std::format(" - numTotalShapes: {}", numTotalShapes) << std::endl;
+            std::cout << std::format(" - maxLeafShapesNum: {}", maxLeafShapesNum) << std::endl;
+            std::cout << std::format(" - maxDepth: {}", maxDepth) << std::endl;
         }
     };
-
-public:
-    BVHBuilder(std::vector<T> &_shapes) : shapes{_shapes} {}
-    std::vector<BVHNode> build();
-
-private:
-    std::vector<T> &shapes;
-    std::vector<BVHNode> nodes;
-
     void recursiveSplit(BVHBuildTreeNode *treeNode, BVHBuildState &state);
-    uint32_t recursiveFlattern(BVHBuildTreeNode *treeNode, BVHBuildState &state);
+    uint32_t recursiveFlattern(BVHBuildTreeNode *treeNode);
 };
 
 template <ShapeType T>
@@ -65,18 +72,14 @@ std::vector<BVHNode> BVHBuilder<T>::build() {
     BVHBuildTreeNode *root = new BVHBuildTreeNode{};
     root->shapes = std::move(shapes);
     root->updateBounds();
-    DEBUG_PRINT(std::format("Building BVH with {} shape(s).", root->shapes.size()))
+    root->depth = 0;
+    DEBUG_PRINT(std::format("Building BVH with {} shape(s):", root->shapes.size()))
     BVHBuildState buildTreeState{};
     recursiveSplit(root, buildTreeState);
     DEBUG_LINE(buildTreeState.print());
 
     // 转化为平坦列表
-    nodes.clear();
-    nodes.shrink_to_fit();
-    DEBUG_PRINT(std::format("Flatterning BVH with {} shape(s).", shapes.size()))
-    BVHBuildState flatternState{};
-    recursiveFlattern(root, flatternState);
-    DEBUG_LINE(flatternState.print());
+    recursiveFlattern(root);
 
     return nodes;
 }
@@ -84,8 +87,7 @@ std::vector<BVHNode> BVHBuilder<T>::build() {
 template <ShapeType T>
 void BVHBuilder<T>::recursiveSplit(BVHBuildTreeNode *treeNode, BVHBuildState &state) {
     state.numTotalNodes++;
-    if (treeNode->shapes.size() <= 1) {
-        DEBUG_ASSERT(treeNode->shapes.size() == 1)
+    if (treeNode->shapes.size() <= 1 || treeNode->depth >= BVH_INTERSECT_STACK_PREALLOC_SIZE - 1) {
         state.addLeafNode(treeNode);
         return;
     }
@@ -116,6 +118,8 @@ void BVHBuilder<T>::recursiveSplit(BVHBuildTreeNode *treeNode, BVHBuildState &st
         treeNode->children[i] = child;
         child->shapes = childShapes[i];
         child->updateBounds();
+        child->depth = treeNode->depth + 1;
+        state.addLeafNode(treeNode);
         if (!stopRecursion) {
             recursiveSplit(child, state);
         }
@@ -123,19 +127,17 @@ void BVHBuilder<T>::recursiveSplit(BVHBuildTreeNode *treeNode, BVHBuildState &st
 }
 
 template <ShapeType T>
-uint32_t BVHBuilder<T>::recursiveFlattern(BVHBuildTreeNode *treeNode, BVHBuildState &state) {
-    state.numTotalNodes++;
+uint32_t BVHBuilder<T>::recursiveFlattern(BVHBuildTreeNode *treeNode) {
 
     uint32_t currIndex = nodes.size();
-    nodes.emplace_back(BVHNode{.bounds = treeNode->bounds, .shapesSize = 0, .shapesBegin = 0});
+    nodes.emplace_back(BVHNode{treeNode->bounds, treeNode->depth, 0, 0});
 
     if (treeNode->shapes.empty()) { // 非叶节点
-        recursiveFlattern(treeNode->children[0], state);
-        nodes[currIndex].rchild = recursiveFlattern(treeNode->children[1], state);
+        recursiveFlattern(treeNode->children[0]);
+        nodes[currIndex].indexRChild = recursiveFlattern(treeNode->children[1]);
     } else {
-        state.addLeafNode(treeNode);
-        nodes[currIndex].shapesSize = treeNode->shapes.size();
-        nodes[currIndex].shapesBegin = shapes.size();
+        nodes[currIndex].numShapes = treeNode->shapes.size();
+        nodes[currIndex].indexShapesBegin = shapes.size();
         shapes.insert(shapes.end(), treeNode->shapes.begin(), treeNode->shapes.end());
     }
     delete treeNode;

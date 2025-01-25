@@ -35,7 +35,30 @@ std::optional<HitInfo> Scene::intersect(const Ray &ray, float t_min, float t_max
     auto hitPoint = transformedPoint(closestHit_modelspace->hitPoint, closest_instance->model2worldMat);
     auto hitNormal = transformedNormal(closestHit_modelspace->hitNormal, closest_instance->world2modelMat);
     auto hitMaterial = closest_instance->material ? closest_instance->material : closestHit_modelspace->hitMaterial;
-    return HitInfo{closestTime, hitPoint, hitNormal, hitMaterial, closest_instance};
+
+    HitInfo hit{closestTime, hitPoint, hitNormal, hitMaterial, closest_instance};
+    DEBUG_LINE(hit.boundsDepth = closestHit_modelspace->boundsDepth);
+    DEBUG_LINE(hit.boundsTestCount = closestHit_modelspace->boundsTestCount);
+    DEBUG_LINE(hit.shapeTestCount = closestHit_modelspace->shapeTestCount);
+    return hit;
+}
+
+void Scene::addShape(const Shape &shape, const Material *material, const glm::vec3 &pos, const glm::vec3 &scale, const glm::vec3 &rotate) {
+    glm::mat4 model2worldMat =
+        glm::translate(glm::mat4{1}, pos) *
+        glm::rotate(glm::mat4{1}, glm::radians(rotate.z), {0, 0, 1}) *
+        glm::rotate(glm::mat4{1}, glm::radians(rotate.y), {0, 1, 0}) *
+        glm::rotate(glm::mat4{1}, glm::radians(rotate.x), {1, 0, 0}) *
+        glm::scale(glm::mat4{1}, scale);
+    addShape(shape, material, model2worldMat);
+}
+
+void Scene::addShape(const Shape &shape, const Material *material, const glm::mat4 model2worldMat) {
+    Bounds bounds, boundsModelspace = shape.getBounds();
+    if (boundsModelspace.isValid()) {
+        bounds = boundsModelspace.transformedBounds(model2worldMat);
+    }
+    addShapeInstance(ShapeInstance{shape, model2worldMat, glm::inverse(model2worldMat), bounds, material});
 }
 
 std::optional<HitInfo> Scene::intersectTransformTime(const Ray &ray, float t_min, float t_max) const {
@@ -79,23 +102,7 @@ std::optional<HitInfo> Scene::intersectTransformTime(const Ray &ray, float t_min
     auto normal = glm::normalize(glm::vec3{
         glm::transpose(closest_instance->world2modelMat) * glm::vec4{closestHit_modelspace->hitNormal, 0}});
     const Material *material = closest_instance->material ? closest_instance->material : closestHit_modelspace->hitMaterial;
-    return HitInfo{closestHitTime, closestHitPoint, normal, material, closest_instance};
-}
 
-void Scene::addShape(const Shape &shape, const Material *material, const glm::vec3 &pos, const glm::vec3 &scale, const glm::vec3 &rotate) {
-    glm::mat4 model2worldMat =
-        glm::translate(glm::mat4{1}, pos) *
-        glm::rotate(glm::mat4{1}, glm::radians(rotate.z), {0, 0, 1}) *
-        glm::rotate(glm::mat4{1}, glm::radians(rotate.y), {0, 1, 0}) *
-        glm::rotate(glm::mat4{1}, glm::radians(rotate.x), {1, 0, 0}) *
-        glm::scale(glm::mat4{1}, scale);
-    addShape(shape, material, model2worldMat);
-}
-
-void Scene::addShape(const Shape &shape, const Material *material, const glm::mat4 model2worldMat) {
-    Bounds bounds, boundsModelspace = shape.getBounds();
-    if (boundsModelspace.isValid()) {
-        bounds = boundsModelspace.transformedBounds(model2worldMat);
-    }
-    addShapeInstance(ShapeInstance{shape, model2worldMat, glm::inverse(model2worldMat), bounds, material});
+    HitInfo hit{closestHitTime, closestHitPoint, normal, material, closest_instance};
+    return hit;
 }

@@ -1,4 +1,7 @@
 #include "camera/rgb.hpp"
+#include "func/tools.hpp"
+#include "glm/common.hpp"
+#include "util/globals.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -36,4 +39,24 @@ glm::vec3 RGB::radiance() const {
         rad[i] = std::pow(channels[i] / 255.0f, 2.2f);
     }
     return rad;
+}
+
+RGB RGB::Lerp(const RGB &r1, const RGB &r2, float t) {
+    glm::ivec3 color{};
+    for (size_t i = 0; i < 3; ++i) {
+        int ch1 = r1.channels[i];
+        int ch2 = r2.channels[i];
+        color[i] = std::clamp<int>(ch1 + (ch2 - ch1) * t, 0, 255);
+    }
+    return RGB{color};
+}
+
+RGB RGB::GenerateHeatmapRGB(float t) {
+    if (!in_range(t, 0.0f, 1.0f - FLOAT_CMP_EPS)) {
+        return RGB{255, 0, 0};
+    }
+
+    t *= HEATMAP_COLOR_PANEL.size();
+    size_t index = std::floor(t);
+    return Lerp(HEATMAP_COLOR_PANEL[index], HEATMAP_COLOR_PANEL[index + 1], glm::fract(t));
 }

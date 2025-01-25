@@ -11,7 +11,6 @@
 #include <stdexcept>
 #include <vector>
 
-
 template <ShapeType T>
 inline std::array<std::vector<T>, 2> split_shapes(std::vector<T> &&shapes, const std::function<bool(const T &, const T &)> &compare, float portion = 0.5f) {
     if (!in_range(portion, 0.0f, 1.0f)) {
