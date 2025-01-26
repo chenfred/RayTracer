@@ -33,8 +33,8 @@ std::optional<HitInfo> Scene::intersect(const Ray &ray, float t_min, float t_max
         return {};
     }
 
-    auto hitPoint = transformedPoint(closestHit_modelspace->hitPoint, closest_instance->model2worldMat);
-    auto hitNormal = transformedNormal(closestHit_modelspace->hitNormal, closest_instance->world2modelMat);
+    auto hitPoint = transform_point(closestHit_modelspace->hitPoint, closest_instance->model2worldMat);
+    auto hitNormal = transform_normal(closestHit_modelspace->hitNormal, closest_instance->world2modelMat);
     auto hitMaterial = closest_instance->material ? closest_instance->material : closestHit_modelspace->hitMaterial;
 
     HitInfo hit{closestTime, hitPoint, hitNormal, hitMaterial, closest_instance};
@@ -75,11 +75,11 @@ std::optional<HitInfo> Scene::intersectTransformTime(const Ray &ray, float t_min
         auto ray_modelspace = ray.transformedRay(instance.world2modelMat);
         // 需要将相交time先从worldspace转到modelspace
         float t_min_modelspace =
-            ray_modelspace.hitAtTime(transformedPoint(ray.hitAtPoint(t_min), instance.world2modelMat));
+            ray_modelspace.hitAtTime(transform_point(ray.hitAtPoint(t_min), instance.world2modelMat));
         float t_max_modelspace =
             std::isinf(closestHitTime)
                 ? closestHitTime
-                : ray_modelspace.hitAtTime(transformedPoint(ray.hitAtPoint(closestHitTime), instance.world2modelMat));
+                : ray_modelspace.hitAtTime(transform_point(ray.hitAtPoint(closestHitTime), instance.world2modelMat));
 
         auto hit_modelspace = instance.shape.intersect(ray_modelspace, t_min_modelspace, t_max_modelspace);
         if (!hit_modelspace) {

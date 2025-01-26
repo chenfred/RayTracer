@@ -1,10 +1,7 @@
 #include "material/basic_materials.hpp"
-#include "func/debug_helpers.hpp"
 #include "func/tools.hpp"
 #include "glm/geometric.hpp"
 #include "util/globals.hpp"
-
-#include <iostream>
 
 glm::vec3 DiffuseMaterial::sampleDirectionLocalized(const glm::vec3 &wi, const RNG &rng) const {
     return rng.cosineSampleHemisphere();
@@ -20,7 +17,7 @@ glm::vec3 SpecularMaterial::sampleDirectionLocalized(const glm::vec3 &wi, const 
 }
 
 glm::vec3 SpecularMaterial::sampleBSDF(const glm::vec3 &wi, const glm::vec3 &wo) const {
-    if (!vequal(wo, {-wi.x, wi.y, -wi.z})) { // TODO: 仅支持在法线的Local坐标系进行判断
+    if (!vec_equal(wo, {-wi.x, wi.y, -wi.z})) { // TODO: 仅支持在法线的Local坐标系进行判断
         return {};
     }
     return reflectance;
@@ -33,7 +30,7 @@ glm::vec3 TransparentMaterial::sampleDirectionLocalized(const glm::vec3 &wi, con
 
     // 离开材质
     auto ref = glm::refract(-wi, {0, -1, 0}, 1 / eta);
-    if (vequal(ref, glm::vec3{0})) {
+    if (vec_equal(ref, glm::vec3{0})) {
         return {-wi.x, wi.y, -wi.z};
     }
     return ref;

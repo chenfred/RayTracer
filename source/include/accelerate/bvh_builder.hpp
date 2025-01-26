@@ -205,7 +205,7 @@ void BVHNodesBuilder<T>::recursiveSplit(BVHBuildTreeNode<T> *treeNode, BVHBuildS
     f_splitShapes_conventional(splitAxis, spiltPos);
     treeNode->axis = splitAxis;
     const auto f_splitCompareShapes = [splitAxis](const T &s1, const T &s2) -> bool { return s1.getBounds().center()[splitAxis] < s2.getBounds().center()[splitAxis]; };
-    std::array<std::vector<T>, 2> childShapes = split_shapes<T>(std::move(treeNode->shapes), f_splitCompareShapes, spiltPos);
+    std::array<std::vector<T>, 2> childShapes = nth_split<T>(std::move(treeNode->shapes), f_splitCompareShapes, spiltPos);
     treeNode->shapes.clear();
     treeNode->shapes.shrink_to_fit();
 

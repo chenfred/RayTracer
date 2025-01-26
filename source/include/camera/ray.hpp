@@ -24,7 +24,7 @@ public:
 
     // for debug
     void print() const { std::cout << std::format("Ray:[{},{},{}]->({},{},{})", origin.x, origin.y, origin.z, direction.x, direction.y, direction.z) << std::endl; }
-    bool operator==(const Ray &rhs) const { return vequal(origin, rhs.origin) && vequal(direction, rhs.direction); }
+    bool operator==(const Ray &rhs) const { return vec_equal(origin, rhs.origin) && vec_equal(direction, rhs.direction); }
 
 private:
     glm::vec3 origin, direction;

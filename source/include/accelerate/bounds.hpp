@@ -15,7 +15,7 @@ public:
 
     bool hasIntersection(const Ray &ray, float t_min, float t_max) const { return hasIntersection(ray, 1.0f / ray.getDirection(), t_min, t_max); };
     bool hasIntersection(const Ray &ray, const glm::vec3 &rayDirInv, float t_min, float t_max) const;
-    bool isValid() const { return vless(posMin, posMax); }
+    bool isValid() const { return vec_less_equal(posMin, posMax); }
     Bounds transformedBounds(const glm::mat4 transMat) const;
     glm::vec3 diagonal() const { return posMax - posMin; }
     glm::vec3 center() const { return (posMin + posMax) * 0.5f; }

@@ -44,7 +44,7 @@ std::optional<HitInfo> Triangle::intersect(const Ray &ray, float t_min, float t_
     float a = glm::dot(edge1, h);
 
     // If the determinant is near zero, the ray lies in the plane of the triangle
-    if (fequal(a, 0.0f)) {
+    if (fp_equal(a, 0.0f)) {
         return {};
     }
 
