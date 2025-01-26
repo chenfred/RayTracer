@@ -17,8 +17,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-static const size_t WIDTH = 1920;
-static const size_t HEIGHT = 1080;
+static const size_t WIDTH = 2560;
+static const size_t HEIGHT = 1440;
 
 void test_material() {
     auto *glass = new TransparentMaterial(1 / 1.33);
@@ -80,11 +80,11 @@ void test_path_tracing() {
     // Place to Scene
     scene.addShape(plane, diffuse_white, {0, -0.25, 0});                     // 地面
     scene.addShape(sphere, emit_purple, {-1.5, 0, 0}, glm::vec3{0.5});       // 左边球
+    scene.addShape(sphere, emit_white, {0, 0.25, -2}, glm::vec3{0.5});      // 中后方球
     scene.addShape(sphere, emit_cyan, {1.5, 0, 0}, glm::vec3{0.5});          // 右边球
-    scene.addShape(sphere, emit_yellow, {0, 0.25, -2}, glm::vec3{0.5});      // 后方球
     scene.addShape(sphere, emit_white, {0, 0, 3}, glm::vec3{0.5});           // 相机后侧（前方）球
     scene.addShape(sphere, specular_full, {1.25, 0.25, -1}, glm::vec3{0.5}); // 右后方镜面球
-    scene.addShape(dragon, reflective_glass, {0, 0, 0}, glm::vec3{1}, {0, -90, 0});
+    scene.addShape(dragon, reflective_glass, {0, 0, 0.5}, glm::vec3{1}, {0, -90, 0});
 
     // scene.addShape(sphere, glass, {0, 0, 0}, glm::vec3{0.125}, glm::vec3{0}); // 测材质专用：中间的小球
     // scene.addShape(dragon, glass, {0, 0, 0}, glm::vec3{1.5}, {0, 0, 0}); //测bvh专用
@@ -102,5 +102,5 @@ void test_path_tracing() {
 
     // Render
     SimplePathTracingRenderer(camera, scene)
-        .render(1, "./results/scene-simple-pt.png", thread_pool);
+        .render(128, "./results/scene-simple-pt.png", thread_pool);
 }

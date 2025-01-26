@@ -17,7 +17,7 @@ public:
 
     void build(std::vector<T> &&_shapes) {
         shapes = std::move(_shapes);
-        nodes = BVHBuilder<T>::BuildBVHNodes(shapes);
+        nodes = BVHNodesBuilder<T>::BuildBVHNodes(shapes);
     }
 
 private:

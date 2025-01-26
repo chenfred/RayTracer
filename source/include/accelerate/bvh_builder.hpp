@@ -20,95 +20,120 @@ struct alignas(32) BVHNode {
     };
 };
 
-template <ShapeType T>
-class BVHBuilder {
+template <HasGetBounds T>
+struct BVHBuildTreeNode {
+    Bounds bounds;
+    std::vector<T> shapes;
+    std::array<BVHBuildTreeNode *, 2> children;
+    uint8_t axis;
+    uint8_t depth;
+    void updateBounds() {
+        bounds = {};
+        for (const T &shape : shapes) {
+            bounds.expand(shape.getBounds());
+        }
+    }
+};
+
+template <HasGetBounds T>
+struct BVHBuildState {
+    uint32_t numTotalNodes{0}, numLeafNodes{0}, numTotalShapes{0}, maxLeafShapesNum{0}, maxDepth{0};
+    void addLeafNode(BVHBuildTreeNode<T> *treeNode) {
+        numLeafNodes++;
+        numTotalShapes += treeNode->shapes.size();
+        maxLeafShapesNum = std::max<decltype(maxLeafShapesNum)>(maxLeafShapesNum, treeNode->shapes.size());
+        maxDepth = std::max<decltype(maxDepth)>(maxDepth, treeNode->depth);
+    }
+    void print() const {
+        std::cout << std::format(" - NumTotalNodes: {}", numTotalNodes) << std::endl;
+        std::cout << std::format(" - numLeafNodes: {}", numLeafNodes) << std::endl;
+        std::cout << std::format(" - numTotalShapes: {}", numTotalShapes) << std::endl;
+        std::cout << std::format(" - maxLeafShapesNum: {}", maxLeafShapesNum) << std::endl;
+        std::cout << std::format(" - maxDepth: {}", maxDepth) << std::endl;
+    }
+};
+
+template <HasGetBounds T>
+class BVHBuildTreeNodeAllocator {
+public:
+    BVHBuildTreeNodeAllocator() : nextNodePtr(CHUNK_SIZE) {}
+    ~BVHBuildTreeNodeAllocator() {
+        for (auto *chunk : nodeChunks) {
+            delete[] chunk;
+        }
+        nodeChunks.clear();
+    }
+
+    BVHBuildTreeNode<T> *allocateNode() {
+        if (nextNodePtr == CHUNK_SIZE) {
+            nodeChunks.push_back(new BVHBuildTreeNode<T>[CHUNK_SIZE]);
+            nextNodePtr = 0;
+        }
+        return &(nodeChunks.back()[nextNodePtr++]);
+    }
+
+private:
+    std::vector<BVHBuildTreeNode<T> *> nodeChunks;
+    size_t nextNodePtr;
+    static constexpr size_t CHUNK_SIZE = 4096;
+};
+
+template <HasGetBounds T>
+class BVHNodesBuilder {
 private:
 public:
-    static std::vector<BVHNode> BuildBVHNodes(std::vector<T> &shapes) { return BVHBuilder(shapes).build(); }
+    static std::vector<BVHNode> BuildBVHNodes(std::vector<T> &shapes) { return BVHNodesBuilder(shapes).build(); }
 
 private:
     std::vector<T> &shapes;
-    std::vector<BVHNode> nodes;
+    std::vector<BVHNode> nodes{};
+    BVHBuildTreeNodeAllocator<T> treeNodeAllocator{};
 
-    BVHBuilder(std::vector<T> &_shapes) : shapes{_shapes} {} // 隐藏构造器
+    BVHNodesBuilder(std::vector<T> &_shapes) : shapes{_shapes} {} // 隐藏构造器
     std::vector<BVHNode> build();
-    struct BVHBuildTreeNode {
-        Bounds bounds;
-        std::vector<T> shapes;
-        std::array<BVHBuildTreeNode *, 2> children;
-        uint8_t axis;
-        uint8_t depth;
-        void updateBounds() {
-            bounds = {};
-            for (const T &shape : shapes) {
-                bounds.expand(shape.getBounds());
-            }
-        }
-    };
-    struct BVHBuildState {
-        uint32_t numTotalNodes{0}, numLeafNodes{0}, numTotalShapes{0}, maxLeafShapesNum{0}, maxDepth{0};
-        void addLeafNode(BVHBuildTreeNode *treeNode) {
-            numLeafNodes++;
-            numTotalShapes += treeNode->shapes.size();
-            maxLeafShapesNum = std::max<decltype(maxLeafShapesNum)>(maxLeafShapesNum, treeNode->shapes.size());
-            maxDepth = std::max<decltype(maxDepth)>(maxDepth, treeNode->depth);
-        }
-        void print() const {
-            std::cout << std::format(" - NumTotalNodes: {}", numTotalNodes) << std::endl;
-            std::cout << std::format(" - numLeafNodes: {}", numLeafNodes) << std::endl;
-            std::cout << std::format(" - numTotalShapes: {}", numTotalShapes) << std::endl;
-            std::cout << std::format(" - maxLeafShapesNum: {}", maxLeafShapesNum) << std::endl;
-            std::cout << std::format(" - maxDepth: {}", maxDepth) << std::endl;
-        }
-    };
-    void recursiveSplit(BVHBuildTreeNode *treeNode, BVHBuildState &state);
-    uint32_t recursiveFlattern(BVHBuildTreeNode *treeNode);
+    void recursiveSplit(BVHBuildTreeNode<T> *treeNode, BVHBuildState<T> &state);
+    uint32_t recursiveFlattern(BVHBuildTreeNode<T> *treeNode);
 };
 
-template <ShapeType T>
-std::vector<BVHNode> BVHBuilder<T>::build() {
+template <HasGetBounds T>
+std::vector<BVHNode> BVHNodesBuilder<T>::build() {
     // 初始化状态
     nodes.clear();
-    nodes.shrink_to_fit();
 
     // 构造树形结构
-    BVHBuildTreeNode *root = new BVHBuildTreeNode{};
+    BVHBuildTreeNode<T> *root = treeNodeAllocator.allocateNode();
     root->shapes = std::move(shapes);
     root->updateBounds();
     root->depth = 0;
     DEBUG_PRINT(std::format("Building BVH with {} shape(s):", root->shapes.size()))
-    BVHBuildState buildTreeState{};
+    BVHBuildState<T> buildTreeState{};
     recursiveSplit(root, buildTreeState);
     DEBUG_LINE(buildTreeState.print());
 
     // 转化为平坦列表
+    nodes.reserve(buildTreeState.numTotalNodes);
+    shapes.reserve(buildTreeState.numTotalShapes);
     recursiveFlattern(root);
 
     return nodes;
 }
 
-template <ShapeType T>
-void BVHBuilder<T>::recursiveSplit(BVHBuildTreeNode *treeNode, BVHBuildState &state) {
+template <HasGetBounds T>
+void BVHNodesBuilder<T>::recursiveSplit(BVHBuildTreeNode<T> *treeNode, BVHBuildState<T> &state) {
     state.numTotalNodes++;
     if (treeNode->shapes.size() <= 1 || treeNode->depth >= BVH_INTERSECT_STACK_PREALLOC_SIZE - 1) {
         state.addLeafNode(treeNode);
         return;
     }
     // 传统BVH节点划分 =============================================
-    const auto f_splitShapes_conventional = [&]() -> std::array<std::vector<T>, 2> {
+    const auto f_splitShapes_conventional = [&](size_t &retSplitAxis, size_t &retSplitPos) -> void {
         auto diag = treeNode->bounds.diagonal();
         uint8_t maxAxis = diag.x > diag.y ? (diag.x > diag.z ? 0 : 2) : (diag.y > diag.z ? 1 : 2);
-        treeNode->axis = maxAxis;
-        std::array<std::vector<T>, 2> childShapes = split_shapes<T>(
-            std::move(treeNode->shapes),
-            [maxAxis](const T &s1, const T &s2) -> bool { return s1.getBounds().center()[maxAxis] < s2.getBounds().center()[maxAxis]; },
-            0.5f);
-        treeNode->shapes.clear();
-        treeNode->shapes.shrink_to_fit();
-        return childShapes;
+        retSplitAxis = maxAxis;
+        retSplitPos = treeNode->shapes.size() / 2;
     };
     // SAH优化分割 =================================================
-    const auto f_SAH = [&]() -> std::array<std::vector<T>, 2> {
+    const auto f_splitShapes_SAH = [&](size_t &retSplitAxis, size_t &retSplitPos) -> void {
         // SAH优化分割策略 - 多轴评估版本
         float globalMinCost = std::numeric_limits<float>::max();
         size_t bestSplitPos = 0;
@@ -171,16 +196,19 @@ void BVHBuilder<T>::recursiveSplit(BVHBuildTreeNode *treeNode, BVHBuildState &st
             }
         }
 
-        treeNode->axis = bestAxis;
-        const auto f_splitCompareShapes = [bestAxis](const T &s1, const T &s2) -> bool { return s1.getBounds().center()[bestAxis] < s2.getBounds().center()[bestAxis]; };
-        std::array<std::vector<T>, 2> childShapes = split_shapes<T>(std::move(treeNode->shapes), f_splitCompareShapes, bestSplitPos);
-        treeNode->shapes.clear();
-        treeNode->shapes.shrink_to_fit();
-
-        return childShapes;
-    };
+        retSplitAxis = bestAxis;
+        retSplitPos = bestSplitPos;
+    }; // SAH的子节点划分法，备用，别给删了
     // ============================================================
-    auto childShapes = f_splitShapes_conventional();
+
+    size_t splitAxis, spiltPos;
+    f_splitShapes_conventional(splitAxis, spiltPos);
+    treeNode->axis = splitAxis;
+    const auto f_splitCompareShapes = [splitAxis](const T &s1, const T &s2) -> bool { return s1.getBounds().center()[splitAxis] < s2.getBounds().center()[splitAxis]; };
+    std::array<std::vector<T>, 2> childShapes = split_shapes<T>(std::move(treeNode->shapes), f_splitCompareShapes, spiltPos);
+    treeNode->shapes.clear();
+    treeNode->shapes.shrink_to_fit();
+
     // TODO: 这里逻辑比较混乱，优化一下
     bool stopRecursion = false;
     if (childShapes[0].empty() || childShapes[1].empty()) {
@@ -195,7 +223,7 @@ void BVHBuilder<T>::recursiveSplit(BVHBuildTreeNode *treeNode, BVHBuildState &st
             continue;
         }
 
-        BVHBuildTreeNode *child = new BVHBuildTreeNode{};
+        BVHBuildTreeNode<T> *child = treeNodeAllocator.allocateNode();
         treeNode->children[i] = child;
         child->shapes = childShapes[i];
         child->updateBounds();
@@ -206,8 +234,8 @@ void BVHBuilder<T>::recursiveSplit(BVHBuildTreeNode *treeNode, BVHBuildState &st
     }
 }
 
-template <ShapeType T>
-uint32_t BVHBuilder<T>::recursiveFlattern(BVHBuildTreeNode *treeNode) {
+template <HasGetBounds T>
+uint32_t BVHNodesBuilder<T>::recursiveFlattern(BVHBuildTreeNode<T> *treeNode) {
 
     uint32_t currIndex = nodes.size();
     nodes.emplace_back(BVHNode{treeNode->bounds, treeNode->axis, treeNode->depth, 0, 0});
@@ -220,7 +248,6 @@ uint32_t BVHBuilder<T>::recursiveFlattern(BVHBuildTreeNode *treeNode) {
         nodes[currIndex].indexShapesBegin = shapes.size();
         shapes.insert(shapes.end(), treeNode->shapes.begin(), treeNode->shapes.end());
     }
-    delete treeNode;
 
     return currIndex;
 }
