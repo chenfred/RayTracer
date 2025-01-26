@@ -56,7 +56,7 @@ RGB RGB::GenerateHeatmapRGB(float t) {
         return RGB{255, 0, 0};
     }
 
-    t *= HEATMAP_COLOR_PANEL.size();
+    t *= HEATMAP_COLOR_PANEL.size() - 1;
     size_t index = std::floor(t);
     return Lerp(HEATMAP_COLOR_PANEL[index], HEATMAP_COLOR_PANEL[index + 1], glm::fract(t));
 }

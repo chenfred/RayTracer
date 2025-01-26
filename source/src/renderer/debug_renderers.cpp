@@ -103,7 +103,7 @@ glm::vec3 DebugBoundsTestCountRenderer::renderPixel(size_t x, size_t y) const {
     if (!hit) {
         return {};
     }
-    return RGB::GenerateHeatmapRGB(hit->boundsTestCount / 255.0f).radiance();
+    return RGB::GenerateHeatmapRGB(hit->boundsTestCount / 128.0f).radiance();
 #else
     return {};
 #endif
@@ -116,7 +116,7 @@ glm::vec3 DebugShapesTestCountRenderer::renderPixel(size_t x, size_t y) const {
     if (!hit) {
         return {};
     }
-    return RGB::GenerateHeatmapRGB(hit->shapeTestCount / 25.5f).radiance();
+    return RGB::GenerateHeatmapRGB(hit->shapeTestCount / 16.0f).radiance();
 #else
     return {};
 #endif

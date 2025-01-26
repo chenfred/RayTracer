@@ -4,18 +4,14 @@
 #include <glm/glm.hpp>
 #include <stdexcept>
 
-Bounds::Bounds(const glm::vec3 &_posMin, const glm::vec3 &_posMax)
-    : posMin{_posMin - BOUNDS_EDGE_EXPANDSION}, posMax{_posMax + BOUNDS_EDGE_EXPANDSION} {
-}
-
 // TODO: 有空再推一下
-bool Bounds::hasIntersection(const Ray &ray, float t_min, float t_max) const {
+bool Bounds::hasIntersection(const Ray &ray, const glm::vec3 &rayDirInv, float t_min, float t_max) const {
     if (!isValid()) {
         return false;
     }
 
-    auto t1 = (posMin - ray.getOrigin()) / ray.getDirection();
-    auto t2 = (posMax - ray.getOrigin()) / ray.getDirection();
+    auto t1 = (posMin - ray.getOrigin()) * rayDirInv;
+    auto t2 = (posMax - ray.getOrigin()) * rayDirInv;
     auto tmin = glm::min(t1, t2);
     auto tmax = glm::max(t1, t2);
 

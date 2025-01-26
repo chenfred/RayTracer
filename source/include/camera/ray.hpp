@@ -3,10 +3,7 @@
 #include "func/tools.hpp"
 #include "glm/geometric.hpp"
 #include "material/material.hpp"
-#include "func/debug_helpers.hpp"
 
-
-#include <cstdint>
 #include <format>
 #include <glm/glm.hpp>
 #include <iostream>
@@ -42,6 +39,6 @@ struct HitInfo {
     const ShapeInstance *hitInstance{};
 
 #ifdef WITH_DEBUG_INFO
-    uint16_t boundsTestCount{0}, shapeTestCount{0}, boundsDepth{0};
+    size_t boundsTestCount{0}, shapeTestCount{0}, boundsDepth{0};
 #endif
 };

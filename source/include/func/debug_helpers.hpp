@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <string_view>
 
-// #define WITH_DEBUG_INFO
+// #define WITH_DEBUG_INFO // 在CMakeLists.txt里define过了
 
 #ifdef WITH_DEBUG_INFO
 #define DEBUG_LINE(...) __VA_ARGS__ ;
