@@ -20,6 +20,7 @@ public:
     glm::vec3 diagonal() const { return posMax - posMin; }
     glm::vec3 center() const { return (posMin + posMax) * 0.5f; }
     glm::vec3 corner(size_t index) const;
+    float area() const;
 
     void expand(const glm::vec3 &pos);
     void expand(const Bounds &bounds);

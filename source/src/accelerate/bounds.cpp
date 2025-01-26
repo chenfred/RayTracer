@@ -70,3 +70,16 @@ glm::vec3 Bounds::corner(size_t index) const {
     }
     return corner;
 }
+
+float Bounds::area() const {
+    if (!isValid()) {
+        return {};
+    }
+    
+    auto diff = posMax - posMin;
+    float dx = diff.x;
+    float dy = diff.y;
+    float dz = diff.z;
+    
+    return 2.0f * (dx * dy + dy * dz + dz * dx);
+}

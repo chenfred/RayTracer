@@ -1,8 +1,9 @@
 #include "shape/scene.hpp"
 #include "accelerate/bounds.hpp"
 #include "camera/ray.hpp"
-#include "func/graphics.hpp"
 #include "shape/shape.hpp"
+#include "func/graphics.hpp"
+#include "func/debug_helpers.hpp"
 
 #include <cassert>
 #include <cmath>

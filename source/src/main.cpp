@@ -17,8 +17,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-static const size_t WIDTH = 192 * 4;
-static const size_t HEIGHT = 108 * 4;
+static const size_t WIDTH = 1920;
+static const size_t HEIGHT = 1080;
 
 void test_material() {
     auto *glass = new TransparentMaterial(1 / 1.33);
@@ -102,5 +102,5 @@ void test_path_tracing() {
 
     // Render
     SimplePathTracingRenderer(camera, scene)
-        .render(128, "./results/scene-simple-pt.png", thread_pool);
+        .render(1, "./results/scene-simple-pt.png", thread_pool);
 }

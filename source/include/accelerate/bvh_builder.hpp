@@ -4,6 +4,7 @@
 #include "func/debug_helpers.hpp"
 #include "func/graphics.hpp"
 #include "util/concepts.hpp"
+
 #include <cstdint>
 
 constexpr uint8_t BVH_INTERSECT_STACK_PREALLOC_SIZE = 32;
@@ -93,21 +94,93 @@ void BVHBuilder<T>::recursiveSplit(BVHBuildTreeNode *treeNode, BVHBuildState &st
         state.addLeafNode(treeNode);
         return;
     }
-
-    const auto &bounds = treeNode->bounds;
-    auto diag = bounds.diagonal();
-    uint8_t maxAxis = diag.x > diag.y ? (diag.x > diag.z ? 0 : 2) : (diag.y > diag.z ? 1 : 2);
-    treeNode->axis = maxAxis;
-    auto cmpShapeFunc = [maxAxis](const T &s1, const T &s2) -> bool {
-        if (!s1.getBounds().isValid()) {
-            return false;
-        }
-        return s1.getBounds().center()[maxAxis] < s2.getBounds().center()[maxAxis];
+    // 传统BVH节点划分 =============================================
+    const auto f_splitShapes_conventional = [&]() -> std::array<std::vector<T>, 2> {
+        auto diag = treeNode->bounds.diagonal();
+        uint8_t maxAxis = diag.x > diag.y ? (diag.x > diag.z ? 0 : 2) : (diag.y > diag.z ? 1 : 2);
+        treeNode->axis = maxAxis;
+        std::array<std::vector<T>, 2> childShapes = split_shapes<T>(
+            std::move(treeNode->shapes),
+            [maxAxis](const T &s1, const T &s2) -> bool { return s1.getBounds().center()[maxAxis] < s2.getBounds().center()[maxAxis]; },
+            0.5f);
+        treeNode->shapes.clear();
+        treeNode->shapes.shrink_to_fit();
+        return childShapes;
     };
-    std::array<std::vector<T>, 2> childShapes = split_shapes<T>(std::move(treeNode->shapes), cmpShapeFunc, 0.5f);
-    treeNode->shapes.clear();
-    treeNode->shapes.shrink_to_fit();
+    // SAH优化分割 =================================================
+    const auto f_SAH = [&]() -> std::array<std::vector<T>, 2> {
+        // SAH优化分割策略 - 多轴评估版本
+        float globalMinCost = std::numeric_limits<float>::max();
+        size_t bestSplitPos = 0;
+        uint8_t bestAxis = 0;
+        const float parentArea = treeNode->bounds.area();
 
+        // 遍历三个轴
+        for (uint8_t axis = 0; axis < 3; ++axis) {
+            // 按当前轴排序
+            std::sort(treeNode->shapes.begin(), treeNode->shapes.end(),
+                      [axis](const T &a, const T &b) {
+                          return a.getBounds().center()[axis] < b.getBounds().center()[axis];
+                      });
+
+            // 预计算包围盒
+            std::vector<Bounds> leftBounds(treeNode->shapes.size());
+            Bounds currentLeft;
+            for (size_t i = 0; i < treeNode->shapes.size(); ++i) {
+                currentLeft.expand(treeNode->shapes[i].getBounds());
+                leftBounds[i] = currentLeft;
+            }
+
+            std::vector<Bounds> rightBounds(treeNode->shapes.size());
+            Bounds currentRight;
+            for (int i = treeNode->shapes.size() - 1; i >= 0; --i) {
+                currentRight.expand(treeNode->shapes[i].getBounds());
+                rightBounds[i] = currentRight;
+            }
+
+            // 采样策略：当形状数量超过8时只采样8个点
+            const size_t sampleCount = treeNode->shapes.size() > 8 ? 8 : treeNode->shapes.size();
+            float localMinCost = std::numeric_limits<float>::max();
+            size_t localSplitPos = 0;
+
+            for (size_t s = 0; s < sampleCount; ++s) {
+                size_t i = (s * (treeNode->shapes.size() - 1)) / (sampleCount - 1); // 均匀采样
+
+                if (i == 0 || i >= treeNode->shapes.size())
+                    continue;
+
+                const float leftArea = leftBounds[i - 1].area();
+                const float rightArea = rightBounds[i].area();
+                const float cost = (leftArea * i + rightArea * (treeNode->shapes.size() - i)) / parentArea;
+
+                DEBUG_ASSERT(leftArea > 0 && rightArea > 0);
+                DEBUG_ASSERT(leftArea <= parentArea && rightArea <= parentArea);
+
+                if (cost < localMinCost) {
+                    localMinCost = cost;
+                    localSplitPos = i;
+                }
+            }
+
+            DEBUG_ASSERT(localSplitPos > 0 && localSplitPos < treeNode->shapes.size());
+
+            if (localMinCost < globalMinCost) {
+                globalMinCost = localMinCost;
+                bestSplitPos = localSplitPos;
+                bestAxis = axis;
+            }
+        }
+
+        treeNode->axis = bestAxis;
+        const auto f_splitCompareShapes = [bestAxis](const T &s1, const T &s2) -> bool { return s1.getBounds().center()[bestAxis] < s2.getBounds().center()[bestAxis]; };
+        std::array<std::vector<T>, 2> childShapes = split_shapes<T>(std::move(treeNode->shapes), f_splitCompareShapes, bestSplitPos);
+        treeNode->shapes.clear();
+        treeNode->shapes.shrink_to_fit();
+
+        return childShapes;
+    };
+    // ============================================================
+    auto childShapes = f_splitShapes_conventional();
     // TODO: 这里逻辑比较混乱，优化一下
     bool stopRecursion = false;
     if (childShapes[0].empty() || childShapes[1].empty()) {
