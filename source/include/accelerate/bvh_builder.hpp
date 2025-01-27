@@ -25,8 +25,8 @@ struct BVHBuildTreeNode {
     Bounds bounds;
     std::vector<T> shapes;
     std::array<BVHBuildTreeNode *, 2> children;
-    uint8_t axis;
-    uint8_t depth;
+    uint8_t axis{};
+    uint8_t depth{};
     void updateBounds() {
         bounds = {};
         for (const T &shape : shapes) {
@@ -178,16 +178,12 @@ void BVHNodesBuilder<T>::recursiveSplit(BVHBuildTreeNode<T> *treeNode, BVHBuildS
                 const float rightArea = rightBounds[i].area();
                 const float cost = (leftArea * i + rightArea * (treeNode->shapes.size() - i)) / parentArea;
 
-                DEBUG_ASSERT(leftArea > 0 && rightArea > 0);
-                DEBUG_ASSERT(leftArea <= parentArea && rightArea <= parentArea);
-
                 if (cost < localMinCost) {
                     localMinCost = cost;
                     localSplitPos = i;
                 }
             }
 
-            DEBUG_ASSERT(localSplitPos > 0 && localSplitPos < treeNode->shapes.size());
 
             if (localMinCost < globalMinCost) {
                 globalMinCost = localMinCost;

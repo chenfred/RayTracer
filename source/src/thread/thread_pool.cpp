@@ -13,9 +13,6 @@ void ParallelForTask::run() {
 }
 
 ThreadPool::ThreadPool(size_t thread_count) : alive{true}, numPendingTasks{0} {
-    // if (thread_count == 0) {
-    //     thread_count = std::thread::hardware_concurrency();
-    // }
     for (size_t i = 0; i < thread_count; ++i) {
         threads.emplace_back(std::thread(ThreadPool::WorkerThread, i, this));
     }
@@ -24,6 +21,7 @@ ThreadPool::ThreadPool(size_t thread_count) : alive{true}, numPendingTasks{0} {
 ThreadPool::~ThreadPool() {
     wait();
     alive = false;
+    queueCondition.notify_all();
     for (auto &thread : threads) {
         thread.join();
     }
@@ -36,9 +34,8 @@ void ThreadPool::parallelFor(size_t width, size_t height, const std::function<vo
         return;
     }
 
-    double divider = std::sqrt(threads.size()); // 把width*height切分成小块的chunk_width*chunk*height，均匀地分配给池子里的线程
+    double divider = std::sqrt(threads.size());
     if (complexTask) {
-        // TEST: 对于复杂的任务，增加并发数有助于线程之间的负载均衡：让一个线程负责多个任务（任务数比线程数要多），理论上对于空旷的场景效率高点
         divider *= 4;
     }
 
@@ -46,7 +43,6 @@ void ThreadPool::parallelFor(size_t width, size_t height, const std::function<vo
     size_t chunk_height = std::ceil(static_cast<double>(height) / divider);
 
     for (size_t x = 0; x < width; x += chunk_width) {
-        // 最后一块可能比较小
         size_t cur_chunk_width = std::min(chunk_width, width - x);
         if (cur_chunk_width <= 0)
             break;
@@ -68,23 +64,27 @@ void ThreadPool::serialFor(size_t width, size_t height, const std::function<void
     }
 }
 
-void ThreadPool::wait() const {
-    while (numPendingTasks != 0) {
-        std::this_thread::yield();
-    }
+void ThreadPool::wait() {
+    std::unique_lock<std::mutex> lock(queueMutex);
+    queueCondition.wait(lock, [this]() { return numPendingTasks == 0; });
 }
 
 void ThreadPool::addTask(Task *task) {
-    Guard guard(spinLock); // 使用 Guard 类管理 SpinLock
-    numPendingTasks++;
-    tasks.push_back(task);
+    {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        numPendingTasks++;
+        tasks.push_back(task);
+    }
+    queueCondition.notify_one();
 }
 
 Task *ThreadPool::getTask() {
-    Guard guard(spinLock); // 使用 Guard 类管理 SpinLock
-    if (tasks.empty()) {
+    std::unique_lock<std::mutex> lock(queueMutex);
+    queueCondition.wait(lock, [this]() { return !tasks.empty() || !alive; });
+    if (!alive && tasks.empty()) {
         return nullptr;
     }
+
     Task *task = tasks.front();
     tasks.pop_front();
     return task;
@@ -92,17 +92,17 @@ Task *ThreadPool::getTask() {
 
 void ThreadPool::WorkerThread(int worker_id, ThreadPool *master) {
     while (master->alive) {
-        if (master->numPendingTasks == 0) {
-            std::this_thread::yield();
-        }
-
         Task *task = master->getTask();
         if (task != nullptr) {
             task->run();
             delete task;
-            master->numPendingTasks--;
-        } else {
-            std::this_thread::yield();
+            {
+                std::lock_guard<std::mutex> lock(master->queueMutex);
+                master->numPendingTasks--;
+                if (master->numPendingTasks == 0) {
+                    master->queueCondition.notify_all();
+                }
+            }
         }
     }
 }

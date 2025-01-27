@@ -1,11 +1,12 @@
 #pragma once
 
-#include "thread/spin_lock.hpp" // 添加 SpinLock 头文件
 #include <atomic>
 #include <deque>
 #include <functional>
 #include <thread>
 #include <vector>
+#include <mutex>
+#include <condition_variable>
 
 class Task {
 public:
@@ -28,17 +29,15 @@ private:
     std::function<void(size_t, size_t)> lambda;
 };
 
-// TODO: 用生产者-消费者模型来优化现在的SpinLock方案
 class ThreadPool {
 public:
     ThreadPool() = delete;
     ThreadPool(size_t thread_count = std::thread::hardware_concurrency());
     ~ThreadPool();
 
-    // 为[0, width)*[0, height)的(x, y)并行执行f(x, y)
     void parallelFor(size_t width, size_t height, const std::function<void(size_t, size_t)> &f, bool complexTask = true);
     void serialFor(size_t width, size_t height, const std::function<void(size_t, size_t)> &f);
-    void wait() const;
+    void wait();
 
     void addTask(Task *task);
     Task *getTask();
@@ -50,5 +49,7 @@ private:
     std::atomic<size_t> numPendingTasks;
     std::vector<std::thread> threads;
     std::deque<Task *> tasks;
-    SpinLock spinLock; // 添加 SpinLock 成员变量
+
+    std::mutex queueMutex;
+    std::condition_variable queueCondition;
 };

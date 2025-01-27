@@ -2,6 +2,8 @@
 
 #include "accelerate/bvh_builder.hpp"
 #include "camera/ray.hpp"
+#include "func/debug_helpers.hpp"
+#include "func/tools.hpp"
 #include "shape/shape.hpp"
 
 #include <cassert>
