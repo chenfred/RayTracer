@@ -1,37 +1,38 @@
-#pragma once
-
-#include "accelerate/bvh_builder.hpp"
-#include "camera/ray.hpp"
-#include "func/debug_helpers.hpp"
-#include "func/tools.hpp"
+#include "accelerate/instance_bvh.hpp"
 #include "shape/shape.hpp"
 
-#include <cassert>
-#include <cstdint>
-#include <optional>
-#include <vector>
+#include <algorithm>
 
-template <ShapeType T>
-class BVH : public Shape {
-public:
-    std::optional<HitInfo> intersect(const Ray &ray, float t_min, float t_max) const override;
-    Bounds getBounds() const override;
-
-    void build(std::vector<T> &&_shapes) {
-        shapes = std::move(_shapes);
-        nodes = BVHNodesBuilder<T>::BuildBVHNodes(shapes);
+std::optional<HitInfo> ShapeInstanceWrapper::intersect(const Ray &ray, float t_min, float t_max) const {
+    if (instance.bounds.isValid() && !instance.bounds.hasIntersection(ray, t_min, t_max)) {
+        return {};
     }
 
-private:
-    std::vector<T> shapes;
-    std::vector<BVHNode> nodes;
-};
+    // 为了保持相交time在model空间和在world空间的一致可比较，这里的transformedRay不能对dir进行归一化：ray在transMat的作用下有可能被拉长或压缩
+    const auto ray_modelspace = ray.transformedRayAbnormalized(instance.world2modelMat);
+    const auto hit_modelspace = instance.shape->intersect(ray_modelspace, t_min, t_max);
+    if (!hit_modelspace) {
+        return {};
+    }
 
-template <ShapeType T>
-std::optional<HitInfo> BVH<T>::intersect(const Ray &ray, float t_min, float t_max) const {
+    auto hitPoint = transform_point(hit_modelspace->hitPoint, instance.model2worldMat);
+    auto hitNormal = transform_normal(hit_modelspace->hitNormal, instance.world2modelMat);
+    const Material *hitMaterial = instance.material ? instance.material : hit_modelspace->hitMaterial;
+
+    HitInfo hit{hit_modelspace->t, hitPoint, hitNormal, hitMaterial, &instance};
+    DEBUG_LINE(hit.boundsDepth = hit_modelspace->boundsDepth);
+    DEBUG_LINE(hit.boundsTestCount = hit_modelspace->boundsTestCount);
+    DEBUG_LINE(hit.shapeTestCount = hit_modelspace->shapeTestCount);
+    return hit;
+}
+
+std::optional<HitInfo> InstanceBVH::intersect(const Ray &ray, float t_min, float t_max) const {
     glm::vec3 rayDirInv = 1.0f / ray.getDirection();
     std::optional<HitInfo> closestHit;
     DEBUG_LINE(uint16_t boundsTestCount{0}, shapeTestCount{0})
+
+    // finite instances ====================================================================================
+
     // 用固定大小的栈来模拟递归调用
     std::array<uint32_t, BVH_INTERSECT_STACK_PREALLOC_SIZE> stack;
     uint8_t rsp{};    // 始终指向栈顶外侧一格（未使用的空间）
@@ -62,8 +63,8 @@ std::optional<HitInfo> BVH<T>::intersect(const Ray &ray, float t_min, float t_ma
             int indexShapesBegin = node.indexEntitiesBegin; // 转为int防止int和uint比的时候出bug
             int indexShapesEnd = indexShapesBegin + node.numEntities;
             const auto f_intersectTestAndSet = [&](int i) -> void {
-                const Shape &shape = shapes[i];
-                std::optional<HitInfo> hit = shape.intersect(ray, t_min, t_max);
+                const auto &wrapper = wrappers[i];
+                auto hit = wrapper.intersect(ray, t_min, t_max);
                 if (hit) {
                     t_max = hit->t;
                     closestHit = hit;
@@ -85,6 +86,19 @@ std::optional<HitInfo> BVH<T>::intersect(const Ray &ray, float t_min, float t_ma
         }
     }
 
+    // infinity instances ====================================================================================
+
+    for(const auto& wrapper:infInstWrappers){
+        auto hit = wrapper.intersect(ray, t_min, t_max);
+        if (hit) {
+            t_max = hit->t;
+            closestHit = hit;
+            // DEBUG_PRINT(std::format("hit with bounds depth {}", node.nodeDepth))
+        }
+    }
+
+    // return ================================================================================================
+
 #ifdef WITH_DEBUG_INFO
     if (closestHit) {
         closestHit->boundsTestCount = std::max<decltype(closestHit->boundsTestCount)>(closestHit->boundsTestCount, boundsTestCount);
@@ -94,10 +108,15 @@ std::optional<HitInfo> BVH<T>::intersect(const Ray &ray, float t_min, float t_ma
     return closestHit;
 }
 
-template <ShapeType T>
-Bounds BVH<T>::getBounds() const {
-    if (nodes.empty()) {
-        return {};
+void InstanceBVH::build(std::vector<ShapeInstance> &&instances) {
+    wrappers.reserve(instances.size());
+    for (auto &instance : instances) {
+        if (instance.bounds.isValid()) {
+            wrappers.emplace_back(std::move(instance));
+        } else {
+            infInstWrappers.emplace_back(std::move(instance));
+        }
     }
-    return nodes.front().bounds;
+    wrappers.shrink_to_fit();
+    nodes = BVHNodesBuilder<ShapeInstanceWrapper>::BuildBVHNodes(wrappers);
 }

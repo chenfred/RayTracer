@@ -13,9 +13,9 @@ struct alignas(32) BVHNode {
     Bounds bounds;
     uint8_t axis;
     uint8_t depth;
-    uint16_t numShapes;
+    uint16_t numEntities;
     union { // 减少占用，用于对齐32字节
-        uint32_t indexShapesBegin;
+        uint32_t indexEntitiesBegin;
         uint32_t indexRChild;
     };
 };
@@ -23,32 +23,32 @@ struct alignas(32) BVHNode {
 template <HasGetBounds T>
 struct BVHBuildTreeNode {
     Bounds bounds;
-    std::vector<T> shapes;
+    std::vector<T> entities;
     std::array<BVHBuildTreeNode *, 2> children;
     uint8_t axis{};
     uint8_t depth{};
     void updateBounds() {
         bounds = {};
-        for (const T &shape : shapes) {
-            bounds.expand(shape.getBounds());
+        for (const T &entity : entities) {
+            bounds.expand(entity.getBounds());
         }
     }
 };
 
 template <HasGetBounds T>
 struct BVHBuildState {
-    uint32_t numTotalNodes{0}, numLeafNodes{0}, numTotalShapes{0}, maxLeafShapesNum{0}, maxDepth{0};
+    uint32_t numTotalNodes{0}, numLeafNodes{0}, numTotalEntities{0}, maxNumLeafEntities{0}, maxDepth{0};
     void addLeafNode(BVHBuildTreeNode<T> *treeNode) {
         numLeafNodes++;
-        numTotalShapes += treeNode->shapes.size();
-        maxLeafShapesNum = std::max<decltype(maxLeafShapesNum)>(maxLeafShapesNum, treeNode->shapes.size());
+        numTotalEntities += treeNode->entities.size();
+        maxNumLeafEntities = std::max<decltype(maxNumLeafEntities)>(maxNumLeafEntities, treeNode->entities.size());
         maxDepth = std::max<decltype(maxDepth)>(maxDepth, treeNode->depth);
     }
     void print() const {
         std::cout << std::format(" - NumTotalNodes: {}", numTotalNodes) << std::endl;
         std::cout << std::format(" - numLeafNodes: {}", numLeafNodes) << std::endl;
-        std::cout << std::format(" - numTotalShapes: {}", numTotalShapes) << std::endl;
-        std::cout << std::format(" - maxLeafShapesNum: {}", maxLeafShapesNum) << std::endl;
+        std::cout << std::format(" - numTotalEntities: {}", numTotalEntities) << std::endl;
+        std::cout << std::format(" - maxNumLeafEntities: {}", maxNumLeafEntities) << std::endl;
         std::cout << std::format(" - maxDepth: {}", maxDepth) << std::endl;
     }
 };
@@ -82,58 +82,56 @@ template <HasGetBounds T>
 class BVHNodesBuilder {
 private:
 public:
-    static std::vector<BVHNode> BuildBVHNodes(std::vector<T> &shapes) { return BVHNodesBuilder(shapes).build(); }
+    static std::vector<BVHNode> BuildBVHNodes(std::vector<T> &entities) { return BVHNodesBuilder(entities).buildAndRelease(); }
 
 private:
-    std::vector<T> &shapes;
+    std::vector<T> &entities;
     std::vector<BVHNode> nodes{};
     BVHBuildTreeNodeAllocator<T> treeNodeAllocator{};
 
-    BVHNodesBuilder(std::vector<T> &_shapes) : shapes{_shapes} {} // 隐藏构造器
-    std::vector<BVHNode> build();
+    BVHNodesBuilder(std::vector<T> &_entites) : entities{_entites} {} // 隐藏构造器
+    std::vector<BVHNode> buildAndRelease();
     void recursiveSplit(BVHBuildTreeNode<T> *treeNode, BVHBuildState<T> &state);
     uint32_t recursiveFlattern(BVHBuildTreeNode<T> *treeNode);
 };
 
 template <HasGetBounds T>
-std::vector<BVHNode> BVHNodesBuilder<T>::build() {
-    // 初始化状态
-    nodes.clear();
-
+std::vector<BVHNode> BVHNodesBuilder<T>::buildAndRelease() {
     // 构造树形结构
     BVHBuildTreeNode<T> *root = treeNodeAllocator.allocateNode();
-    root->shapes = std::move(shapes);
+    root->entities = std::move(entities);
     root->updateBounds();
     root->depth = 0;
-    DEBUG_PRINT(std::format("Building BVH with {} shape(s):", root->shapes.size()))
+    DEBUG_PRINT(std::format("Building BVH with {} entities:", root->entities.size()))
     BVHBuildState<T> buildTreeState{};
     recursiveSplit(root, buildTreeState);
     DEBUG_LINE(buildTreeState.print());
 
     // 转化为平坦列表
     nodes.reserve(buildTreeState.numTotalNodes);
-    shapes.reserve(buildTreeState.numTotalShapes);
+    entities.reserve(buildTreeState.numTotalEntities);
     recursiveFlattern(root);
 
-    return nodes;
+    auto releaseNodes = std::move(nodes); // 为了触发NRVO
+    return releaseNodes;
 }
 
 template <HasGetBounds T>
 void BVHNodesBuilder<T>::recursiveSplit(BVHBuildTreeNode<T> *treeNode, BVHBuildState<T> &state) {
     state.numTotalNodes++;
-    if (treeNode->shapes.size() <= 1 || treeNode->depth >= BVH_INTERSECT_STACK_PREALLOC_SIZE - 1) {
+    if (treeNode->entities.size() <= 1 || treeNode->depth >= BVH_INTERSECT_STACK_PREALLOC_SIZE - 1) {
         state.addLeafNode(treeNode);
         return;
     }
     // 传统BVH节点划分 =============================================
-    const auto f_splitShapes_conventional = [&](size_t &retSplitAxis, size_t &retSplitPos) -> void {
+    const auto f_split_conventional = [&](size_t &retSplitAxis, size_t &retSplitPos) -> void {
         auto diag = treeNode->bounds.diagonal();
         uint8_t maxAxis = diag.x > diag.y ? (diag.x > diag.z ? 0 : 2) : (diag.y > diag.z ? 1 : 2);
         retSplitAxis = maxAxis;
-        retSplitPos = treeNode->shapes.size() / 2;
+        retSplitPos = treeNode->entities.size() / 2;
     };
     // SAH优化分割 =================================================
-    const auto f_splitShapes_SAH = [&](size_t &retSplitAxis, size_t &retSplitPos) -> void {
+    const auto f_split_SAH = [&](size_t &retSplitAxis, size_t &retSplitPos) -> void {
         // SAH优化分割策略 - 多轴评估版本
         float globalMinCost = std::numeric_limits<float>::max();
         size_t bestSplitPos = 0;
@@ -143,47 +141,46 @@ void BVHNodesBuilder<T>::recursiveSplit(BVHBuildTreeNode<T> *treeNode, BVHBuildS
         // 遍历三个轴
         for (uint8_t axis = 0; axis < 3; ++axis) {
             // 按当前轴排序
-            std::sort(treeNode->shapes.begin(), treeNode->shapes.end(),
+            std::sort(treeNode->entities.begin(), treeNode->entities.end(),
                       [axis](const T &a, const T &b) {
                           return a.getBounds().center()[axis] < b.getBounds().center()[axis];
                       });
 
             // 预计算包围盒
-            std::vector<Bounds> leftBounds(treeNode->shapes.size());
+            std::vector<Bounds> leftBounds(treeNode->entities.size());
             Bounds currentLeft;
-            for (size_t i = 0; i < treeNode->shapes.size(); ++i) {
-                currentLeft.expand(treeNode->shapes[i].getBounds());
+            for (size_t i = 0; i < treeNode->entities.size(); ++i) {
+                currentLeft.expand(treeNode->entities[i].getBounds());
                 leftBounds[i] = currentLeft;
             }
 
-            std::vector<Bounds> rightBounds(treeNode->shapes.size());
+            std::vector<Bounds> rightBounds(treeNode->entities.size());
             Bounds currentRight;
-            for (int i = treeNode->shapes.size() - 1; i >= 0; --i) {
-                currentRight.expand(treeNode->shapes[i].getBounds());
+            for (int i = treeNode->entities.size() - 1; i >= 0; --i) {
+                currentRight.expand(treeNode->entities[i].getBounds());
                 rightBounds[i] = currentRight;
             }
 
             // 采样策略：当形状数量超过8时只采样8个点
-            const size_t sampleCount = treeNode->shapes.size() > 8 ? 8 : treeNode->shapes.size();
+            const size_t sampleCount = treeNode->entities.size() > 8 ? 8 : treeNode->entities.size();
             float localMinCost = std::numeric_limits<float>::max();
             size_t localSplitPos = 0;
 
             for (size_t s = 0; s < sampleCount; ++s) {
-                size_t i = (s * (treeNode->shapes.size() - 1)) / (sampleCount - 1); // 均匀采样
+                size_t i = (s * (treeNode->entities.size() - 1)) / (sampleCount - 1); // 均匀采样
 
-                if (i == 0 || i >= treeNode->shapes.size())
+                if (i == 0 || i >= treeNode->entities.size())
                     continue;
 
                 const float leftArea = leftBounds[i - 1].area();
                 const float rightArea = rightBounds[i].area();
-                const float cost = (leftArea * i + rightArea * (treeNode->shapes.size() - i)) / parentArea;
+                const float cost = (leftArea * i + rightArea * (treeNode->entities.size() - i)) / parentArea;
 
                 if (cost < localMinCost) {
                     localMinCost = cost;
                     localSplitPos = i;
                 }
             }
-
 
             if (localMinCost < globalMinCost) {
                 globalMinCost = localMinCost;
@@ -198,30 +195,30 @@ void BVHNodesBuilder<T>::recursiveSplit(BVHBuildTreeNode<T> *treeNode, BVHBuildS
     // ============================================================
 
     size_t splitAxis, spiltPos;
-    f_splitShapes_conventional(splitAxis, spiltPos);
+    f_split_conventional(splitAxis, spiltPos);
     treeNode->axis = splitAxis;
-    const auto f_splitCompareShapes = [splitAxis](const T &s1, const T &s2) -> bool { return s1.getBounds().center()[splitAxis] < s2.getBounds().center()[splitAxis]; };
-    std::array<std::vector<T>, 2> childShapes = nth_split<T>(std::move(treeNode->shapes), f_splitCompareShapes, spiltPos);
-    treeNode->shapes.clear();
-    treeNode->shapes.shrink_to_fit();
+    const auto f_compareEntity = [splitAxis](const T &s1, const T &s2) -> bool { return s1.getBounds().center()[splitAxis] < s2.getBounds().center()[splitAxis]; };
+    std::array<std::vector<T>, 2> childEntities = nth_split<T>(std::move(treeNode->entities), f_compareEntity, spiltPos);
+    treeNode->entities.clear();
+    treeNode->entities.shrink_to_fit();
 
     // TODO: 这里逻辑比较混乱，优化一下
     bool stopRecursion = false;
-    if (childShapes[0].empty() || childShapes[1].empty()) {
+    if (childEntities[0].empty() || childEntities[1].empty()) {
         stopRecursion = true;
-        if (childShapes[0].empty() && childShapes[1].empty()) {
+        if (childEntities[0].empty() && childEntities[1].empty()) {
             state.addLeafNode(treeNode);
             return;
         }
     }
     for (auto i = 0; i < 2; ++i) {
-        if (childShapes[i].empty()) {
+        if (childEntities[i].empty()) {
             continue;
         }
 
         BVHBuildTreeNode<T> *child = treeNodeAllocator.allocateNode();
         treeNode->children[i] = child;
-        child->shapes = childShapes[i];
+        child->entities = childEntities[i];
         child->updateBounds();
         child->depth = treeNode->depth + 1;
         if (!stopRecursion) {
@@ -236,13 +233,13 @@ uint32_t BVHNodesBuilder<T>::recursiveFlattern(BVHBuildTreeNode<T> *treeNode) {
     uint32_t currIndex = nodes.size();
     nodes.emplace_back(BVHNode{treeNode->bounds, treeNode->axis, treeNode->depth, 0, 0});
 
-    if (treeNode->shapes.empty()) { // 非叶节点
+    if (treeNode->entities.empty()) { // 非叶节点
         recursiveFlattern(treeNode->children[0]);
         nodes[currIndex].indexRChild = recursiveFlattern(treeNode->children[1]);
     } else {
-        nodes[currIndex].numShapes = treeNode->shapes.size();
-        nodes[currIndex].indexShapesBegin = shapes.size();
-        shapes.insert(shapes.end(), treeNode->shapes.begin(), treeNode->shapes.end());
+        nodes[currIndex].numEntities = treeNode->entities.size();
+        nodes[currIndex].indexEntitiesBegin = entities.size();
+        entities.insert(entities.end(), treeNode->entities.begin(), treeNode->entities.end());
     }
 
     return currIndex;

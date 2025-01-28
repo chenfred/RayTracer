@@ -17,8 +17,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-static const size_t WIDTH = 1920;
-static const size_t HEIGHT = 1080;
+static const size_t WIDTH = 192 * 4;
+static const size_t HEIGHT = 108 * 4;
 
 void test_material() {
     auto *glass = new TransparentMaterial(1 / 1.33);
@@ -60,6 +60,7 @@ void test_path_tracing() {
     auto *emit_cyan = new DiffuseMaterial(cyan.radiance(), glm::vec3{1});
 
     auto *diffuse_white = new DiffuseMaterial(white.radiance());
+    auto *diffuse_pink = new DiffuseMaterial(pink.radiance());
 
     auto *specular_full = new SpecularMaterial(glm::vec3{1.0});
     auto *specular_half = new SpecularMaterial(RGB(128, 128, 128).radiance());
@@ -75,7 +76,7 @@ void test_path_tracing() {
 
     // Camera
     Film film{WIDTH, HEIGHT};
-    Camera camera(film, {0, 0, 2}, {0, 0, 0}, 90);
+    Camera camera(film, {0, 0, 1.5}, {0, 0, 0}, 90);
 
     // Place to Scene
     scene.addShape(plane, diffuse_white, {0, -0.25, 0});                     // 地面
@@ -84,10 +85,18 @@ void test_path_tracing() {
     scene.addShape(sphere, emit_cyan, {1.5, 0, 0}, glm::vec3{0.5});          // 右边球
     scene.addShape(sphere, emit_white, {0, 0, 3}, glm::vec3{0.5});           // 相机后侧（前方）球
     scene.addShape(sphere, specular_full, {1.25, 0.25, -1}, glm::vec3{0.5}); // 右后方镜面球
-    scene.addShape(dragon, specular_half, {0, 0, 0.25}, glm::vec3{1}, {0, -90, 0});
+    scene.addShape(dragon, glass, {0, 0, 0.25}, glm::vec3{1}, {0, -90, 0});
 
     // scene.addShape(sphere, glass, {0, 0, 0}, glm::vec3{0.125}, glm::vec3{0}); // 测材质专用：中间的小球
     // scene.addShape(dragon, glass, {0, 0, 0}, glm::vec3{1.5}, {0, 0, 0}); //测bvh专用
+    // for (float x = -5; x <= 5; x += 1) {
+    //     for (float z = -5; z <= 5; z += 1) {
+    //         scene.addShape(dragon, glass, {x, 0, z}, glm::vec3{0.5}, {0, -90, 0});
+    //     }
+    // }
+
+    // Build Scene
+    scene.build();
 
     // ThreadPool
     ThreadPool *thread_pool = new ThreadPool{APP_CONCURRENCY};

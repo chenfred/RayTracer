@@ -4,7 +4,6 @@
 #include "camera/ray.hpp"
 #include "util/globals.hpp"
 
-#include <limits>
 #include <optional>
 
 class Shape {
@@ -16,8 +15,9 @@ public:
     virtual Bounds getBounds() const { return {}; }
 };
 
+// TODO: 管理好指针和引用
 struct ShapeInstance {
-    const Shape &shape;
+    const Shape *shape;
     glm::mat4 model2worldMat, world2modelMat;
     Bounds bounds{};
     const Material *material{};
