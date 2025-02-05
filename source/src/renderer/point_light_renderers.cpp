@@ -24,9 +24,9 @@ glm::vec3 DirectShadingRenderer::renderPixel(size_t x, size_t y) const {
         const auto lightVec = light.position - point;
         const auto lightDir = glm::normalize(lightVec);
 
-        glm::vec3 albedo_pi = light.intensity * material->sampleBSDF(-lightDir, viewDir);
+        glm::vec3 albedo = light.intensity * material->evalBSDF(-lightDir, viewDir);
         // accumulate ambient term ahead
-        radiance += albedo_pi * 0.01f * light.intensity; 
+        radiance += albedo * 0.01f * light.intensity; 
 
         if (glm::dot(lightDir, normal) < 0) {
             continue;
@@ -44,7 +44,7 @@ glm::vec3 DirectShadingRenderer::renderPixel(size_t x, size_t y) const {
         radiance += glm::vec3{0.5} * light.intensity *
                     std::pow(std::max(0.0f, glm::dot(halfVector, normal)), 128.0f) / dist2;
         // diffuse term
-        radiance += albedo_pi * light.intensity * std::max(0.0f, glm::dot(lightDir, normal)) / dist;
+        radiance += albedo * light.intensity * std::max(0.0f, glm::dot(lightDir, normal)) / dist;
     }
 
     return radiance;
@@ -70,7 +70,7 @@ glm::vec3 WhittedRayTracingRenderer::renderPixel(size_t x, size_t y) const {
         // 转换到法线的本地坐标系，方便计算
         LocalFrame frame{hitNormal};
         auto wi_local = frame.toLocal(-ray.getDirection());
-        auto wo_local = material->sampleDirectionLocalized(wi_local, rng);
+        auto wo_local = material->sampleScatteringDirection(wi_local, rng);
 
         // 对当前弹射点进行点光源的直接着色
         glm::vec3 local_shading{};
@@ -87,13 +87,13 @@ glm::vec3 WhittedRayTracingRenderer::renderPixel(size_t x, size_t y) const {
             auto dist2 = dist * dist;
 
             auto wl_local = frame.toLocal(lightDir);
-            local_shading += light.intensity * material->sampleBSDF(wi_local, wl_local) * std::max(0.0f, glm::dot(wl_local, {0, 1, 0})); // diffuse term
+            local_shading += light.intensity * material->evalBSDF(wi_local, wl_local) * std::max(0.0f, glm::dot(wl_local, {0, 1, 0})); // diffuse term
             local_shading += light.intensity * glm::vec3{0.5} * std::pow(std::max(0.0f, glm::dot(glm::normalize(wi_local + wl_local), glm::vec3{0, 1, 0})), 128.0f) / dist;
         }
 
         // 累加当前弹射点的radiance贡献
         radiance += beta * (local_shading + material->getEmissive()) / P_ROULETTE;
-        beta *= material->sampleBSDF(wi_local, wo_local);
+        beta *= material->evalBSDF(wi_local, wo_local);
 
         // 继续发射光线
         ray = Ray(hitPoint, frame.toWorld(wo_local));

@@ -8,8 +8,8 @@ public:
     DiffuseMaterial(const glm::vec3 &_emissive, const glm::vec3 &_albedo) : Material{_emissive}, albedo{_albedo} {}
 
     ScatteringType getScatteringType() const override { return ScatteringType::DIFFUSE; }
-    glm::vec3 sampleDirectionLocalized(const glm::vec3 &wi, const RNG &rng) const override;
-    glm::vec3 sampleBSDF(const glm::vec3 &wi, const glm::vec3 &wo) const override;
+    glm::vec3 sampleScatteringDirection(const glm::vec3 &wi, const RNG &rng) const override;
+    glm::vec3 evalBSDF(const glm::vec3 &wi, const glm::vec3 &wo) const override;
 
 private:
     glm::vec3 albedo;
@@ -21,8 +21,8 @@ public:
     SpecularMaterial(const glm::vec3 &_emissive, const glm::vec3 &_reflect) : Material{_emissive}, reflectance{_reflect} {}
 
     ScatteringType getScatteringType() const override { return ScatteringType::SPECULAR; }
-    glm::vec3 sampleDirectionLocalized(const glm::vec3 &wi, const RNG &) const override;
-    glm::vec3 sampleBSDF(const glm::vec3 &wi, const glm::vec3 &wo) const override;
+    glm::vec3 sampleScatteringDirection(const glm::vec3 &wi, const RNG &) const override;
+    glm::vec3 evalBSDF(const glm::vec3 &wi, const glm::vec3 &wo) const override;
 
 private:
     glm::vec3 reflectance;
@@ -36,8 +36,8 @@ public:
         : eta(_eta), reflectance(_reflectance), transmittance(_transmittance) {}
 
     ScatteringType getScatteringType() const override { return ScatteringType::TRANSPARENT; }
-    glm::vec3 sampleDirectionLocalized(const glm::vec3 &wi, const RNG &) const override;
-    glm::vec3 sampleBSDF(const glm::vec3 &wi, const glm::vec3 &wo) const override;
+    glm::vec3 sampleScatteringDirection(const glm::vec3 &wi, const RNG &) const override;
+    glm::vec3 evalBSDF(const glm::vec3 &wi, const glm::vec3 &wo) const override;
 
 private:
     float eta;
